@@ -14,13 +14,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class StartUpConfigurePiActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_start_up_configure_pi);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -42,17 +43,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        Button loginButton = (Button) findViewById(R.id.lightBtn);
-        loginButton.setOnClickListener(new Button.OnClickListener() {
+        final ImageView configurePiChecked = (ImageView) findViewById(R.id.checkbox);
+        configurePiChecked.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                Intent intent = new Intent(getBaseContext(), LightsActivity.class);
-                startActivity(intent);
+                configurePiChecked.setImageDrawable(getResources().getDrawable(R.drawable.ic_toggle_check_box));
             }
         });
     }

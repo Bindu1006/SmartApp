@@ -1,6 +1,7 @@
 package com.example.shrutib.smartapp;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -8,22 +9,36 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+import java.util.ArrayList;
+
+public class LightsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
+        setContentView(R.layout.activity_lights);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        getConnectedSmartDevice();
+        ListView listView =  (ListView) findViewById(R.id.id_AppliancesList);
+//        ArrayList<String> deviceslist = (ArrayList<String>) getIntent().getSerializableExtra("DEVICESCHEDULERLIST");
+        ArrayList<String> deviceslist = new ArrayList<String>();
+        deviceslist.add("10.0.0.80");
+        deviceslist.add("10.0.0.83");
+        deviceslist.add("10.0.0.77");
+        Log.d("VIEWDEVICE :", deviceslist + " ");
+
+        LightsListAdapter adapter = new LightsListAdapter(getParent(), this, deviceslist);
+        listView.setAdapter(adapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -48,13 +63,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onStart() {
         super.onStart();
 
-        Button loginButton = (Button) findViewById(R.id.lightBtn);
-        loginButton.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                Intent intent = new Intent(getBaseContext(), LightsActivity.class);
-                startActivity(intent);
-            }
-        });
+//        Button loginButton = (Button) findViewById(R.id.lightBtn);
+//        loginButton.setOnClickListener(new Button.OnClickListener() {
+//            public void onClick(View v) {
+//                Intent intent = new Intent(getBaseContext(), MainActivity.class);
+//                startActivity(intent);
+//            }
+//        });
     }
 
     @Override
@@ -112,6 +127,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void getConnectedSmartDevice() {
+        Log.d("LightsActivity :: ", "Enetred to fetch connected devices");
+
     }
 
 }
