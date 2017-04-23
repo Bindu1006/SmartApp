@@ -14,13 +14,23 @@
     tools:context="com.example.shrutib.smartapp.LoginActivity"
     tools:showIn="@layout/app_bar_login2">
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerInside"
+        android:src="@drawable/pihome"
+        android:layout_marginBottom="72dp"
+        android:layout_alignBottom="@+id/editText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
     <EditText
         android:layout_width="300dp"
         android:layout_height="40dp"
         android:layout_marginTop="180dp"
         android:hint="Username"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/edittext" />
+        android:background="@drawable/edittext"
+        android:id="@+id/editText" />
 
     <EditText
         android:layout_width="300dp"
@@ -48,6 +58,7 @@
         android:background="@drawable/edittext"
         android:layout_below="@+id/login"
         android:layout_marginTop="30dp"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:id="@+id/button" />
 
 </RelativeLayout>
