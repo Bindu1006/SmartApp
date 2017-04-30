@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -27,18 +26,6 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
         setContentView(R.layout.activity_lights);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        getConnectedSmartDevice();
-        ListView listView =  (ListView) findViewById(R.id.id_AppliancesList);
-//        ArrayList<String> deviceslist = (ArrayList<String>) getIntent().getSerializableExtra("DEVICESCHEDULERLIST");
-        ArrayList<String> deviceslist = new ArrayList<String>();
-        deviceslist.add("10.0.0.80");
-        deviceslist.add("10.0.0.83");
-        deviceslist.add("10.0.0.77");
-        Log.d("VIEWDEVICE :", deviceslist + " ");
-
-        LightsListAdapter adapter = new LightsListAdapter(getParent(), this, deviceslist);
-        listView.setAdapter(adapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -63,13 +50,19 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
     protected void onStart() {
         super.onStart();
 
-//        Button loginButton = (Button) findViewById(R.id.lightBtn);
-//        loginButton.setOnClickListener(new Button.OnClickListener() {
-//            public void onClick(View v) {
-//                Intent intent = new Intent(getBaseContext(), MainActivity.class);
-//                startActivity(intent);
-//            }
-//        });
+        if (checkIfConfiguredDeviceExist()) {
+
+            ListView listView =  (ListView) findViewById(R.id.id_AppliancesList);
+            ArrayList<String> devicesList = getConnectedSmartDevice();
+
+            LightsListAdapter adapter = new LightsListAdapter(getParent(), this, devicesList);
+            listView.setAdapter(adapter);
+
+        } else {
+            Intent intent = new Intent(getBaseContext(), ConfigureDeviceActivity.class);
+            startActivity(intent);
+        }
+
     }
 
     @Override
@@ -129,8 +122,24 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
         return true;
     }
 
-    private void getConnectedSmartDevice() {
-        Log.d("LightsActivity :: ", "Enetred to fetch connected devices");
+    private ArrayList<String> getConnectedSmartDevice() {
+        Log.d("LightsActivity :: ", "Entered to fetch connected devices");
+
+//        ArrayList<String> deviceslist = (ArrayList<String>) getIntent().getSerializableExtra("DEVICESCHEDULERLIST");
+        ArrayList<String> deviceslist = new ArrayList<String>();
+        deviceslist.add("10.0.0.80");
+        deviceslist.add("10.0.0.83");
+        deviceslist.add("10.0.0.77");
+        Log.d("VIEWDEVICE :", deviceslist + " ");
+        return deviceslist;
+
+    }
+
+    private boolean checkIfConfiguredDeviceExist() {
+        Log.d("LightsActivity :: ", "check If Configured Device Exist");
+
+        return false;
+
 
     }
 

@@ -24,6 +24,10 @@ import com.amazonaws.services.iot.AWSIotClient;
 import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
+import com.google.gson.JsonElement;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.security.KeyStore;
 import java.util.ArrayList;
@@ -255,14 +259,16 @@ public class LightsListAdapter extends ArrayAdapter<String> {
             public void onClick(View v) {
                 final String topic = "$aws/things/RaspberryPi/shadow/update/test";
 
-                final String msg = "getData {" +
-                        "IP_ADDRESS= '10.0.0.83'" +
-                        "}";
                 try {
-                    mqttManager.publishString(msg, topic, AWSIotMqttQos.QOS0);
+                    JSONObject msg = new JSONObject();
+                    msg.put("ip_address", "10.0.0.80");
+                    msg.put("cmd", "OFF");
+
+                    mqttManager.publishString(msg.toString(), topic, AWSIotMqttQos.QOS0);
                 } catch (Exception e) {
                     Log.e(LOG_TAG, "Publish error.", e);
                 }
+
                 Toast.makeText(getContext(), "Data Published", Toast.LENGTH_LONG).show();
             }
 

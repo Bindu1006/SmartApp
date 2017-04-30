@@ -12,5 +12,108 @@
     <string name="start_up_configure_pi_msg2">Raspberry Pi will give you to configure extra options like temperature sensor, video surveillance etc.</string>
     <string name="use_register_checkbox_msg">User Raspberry Pi</string>
     <string name="checkbox_text">Check to configure your Raspberry pi</string>
+    <string name="start_discovery">Start discovery</string>
+    <string name="discover">Discover</string>
+    <string name="wifi_unknown">Wifi state unknown</string>
+    <string name="btn_discover_cancel">Cancel</string>
+
+
+    <!--Buttons-->
+    <string name="btn_yes">Yes</string>
+    <string name="btn_no">No</string>
+    <string name="task_db">Downloading and installing %s database ...</string>
+    <string name="app_loading">Loading</string>
+    <string name="task_services">Creating Services database ...\nThis may take a while ...</string>
+    <string name="discover_myphone_name">MyPhone</string>
+
+
+    <string name="discover_start">Discovery started ...</string>
+    <string name="discover_finished">Discovery finished !</string>
+    <string name="discover_canceled">Discovery canceled !</string>
+    <string name="info_unknown">Unknown</string>
+
+
+    <string name="wifi_enabled">Wifi is enabled</string>
+    <string name="wifi_enabling">Wifi is enabling</string>
+    <string name="wifi_disabling">Wifi is disabling</string>
+    <string name="wifi_disabled">Wifi is disabled</string>
+
+    <string name="wifi_scanning">Wifi is scanning</string>
+
+    <string name="wifi_associating">Wifi is associating with %s</string>
+    <string name="wifi_dhcp">Obtaining IP address from %s</string>
+
+
+    <string name="net_ip">IP: %1$s/%2$d (%3$s)</string>
+    <string name="net_carrier">CARRIER: %s</string>
+    <string name="net_ssid">SSID: %s</string>
+    <string name="net_mode">MODE: %s</string>
+    <string name="net_mode_wifi">WiFi (%1$s %2$s)</string>
+    <string name="net_mode_mobile">Mobile</string>
+    <string name="net_mode_eth">Ethernet (Not supported yet)</string>
+    <string name="net_mode_unknown">Unknown</string>
+
+    <!--Preferences-->
+    <string name="btn_options">Options</string>
+
+
+    <string name="preferences_help">Help</string>
+    <string name="preferences_export">Export</string>
+    <string name="preferences_credits">Credits</string>
+    <string name="preferences_discover">Discovery</string>
+    <string name="preferences_portscan">Port Scan</string>
+    <string name="preferences_advanced">General</string>
+
+    <string name="preferences_donate">Donate: If you like this app, you can buy me a beer.</string>
+    <string name="preferences_resolve_name_title">Resolve Hostname</string>
+    <string name="preferences_resolve_name_summary">Use system DNS to resolve ip addresses</string>
+    <string name="preferences_vibrate_title">Vibrate</string>
+    <string name="preferences_vibrate_summary">Vibrate when Scan is completed</string>
+    <string name="preferences_ratecontrol_enable_title">Rate control</string>
+    <string name="preferences_ratecontrol_enable_summary">Enable automatic rate detection</string>
+    <string name="preferences_timeout_discover_title">Custom rate</string>
+    <string name="preferences_timeout_discover_summary">Rate of discovery in millisecondes</string>
+    <string name="preferences_port_start_title">First Port</string>
+    <string name="preferences_port_start_summary">First TCP Port to scan. 1-65535</string>
+    <string name="preferences_port_end_title">Last Port</string>
+    <string name="preferences_port_end_summary">Last TCP Port to scan. 1-65535</string>
+    <string name="preferences_banner_title">Services banners</string>
+    <string name="preferences_banner_summary">Read banner from a connected socket (ex.: SSH-2.0-OpenSSH_5.1p1)</string>
+    <string name="preferences_timeout_force_title">Custom timeout</string>
+    <string name="preferences_timeout_force_summary">Manually set connect timeout</string>
+    <string name="preferences_timeout_title">Connect timeout</string>
+    <string name="preferences_timeout_summary">Timeout of a port connection in millisecondes</string>
+    <string name="preferences_allow_mobile_title">Allow mobile discovery</string>
+    <string name="preferences_allow_mobile_summary">Scan over edge/3g/... usually leading to strange results, if any</string>
+    <string name="preferences_ssh_user_title">SSH User</string>
+    <string name="preferences_ssh_user_summary">Username for the SSH connection</string>
+    <string name="preferences_threads_title">Threads pool</string>
+    <string name="preferences_threads_summary">Maximum number of threads to use in host discovery (1-256)</string>
+    <string name="preferences_resetdb_title">Update NIC Database</string>
+    <string name="preferences_resetdb_summary">Pull and update MAC addresses database</string>
+    <string name="preferences_resetdb_action">Do you want to download %1$s ? (~%2$sk)</string>
+    <string name="preferences_resetdb_ok">Database updated ! %s new entries ...</string>
+    <string name="preferences_version_title">Version</string>
+    <string name="preferences_website_title">Website</string>
+    <string name="preferences_email_title">Contact</string>
+    <string name="preferences_intf_title">Network interface</string>
+    <string name="preferences_intf_summary">Choose which interface to use</string>
+    <string name="preferences_discover_method_title">Discover Method</string>
+    <string name="preferences_discover_method_summary">Change to different method of host discovery</string>
+    <string name="preferences_discover_method_title_dialog">Choose a method</string>
+    <string name="preferences_ip_start_title">IP start</string>
+    <string name="preferences_ip_start_summary">First IP address to scan</string>
+    <string name="preferences_ip_end_title">IP end</string>
+    <string name="preferences_ip_end_summary">Last IP address to scan</string>
+    <string name="preferences_ip_custom_title">Custom IP range</string>
+    <string name="preferences_ip_custom_summary">Manually set start/end IPs</string>
+    <string name="preferences_cidr_custom_title">Custom CIDR</string>
+    <string name="preferences_cidr_custom_summary">Manually set CIDR (defines subnet)</string>
+    <string name="preferences_cidr">Change CIDR</string>
+
+    <string name="preferences_error1">Error: First is bigger than Last !</string>
+    <string name="preferences_error2">Error: Number of Threads must be between 1 and 256 !</string>
+    <string name="preferences_error3">Error: File transfer interrupted !</string>
+    <string name="preferences_error4">Error: Value is not a valid IP address !</string>
 
 </resources>

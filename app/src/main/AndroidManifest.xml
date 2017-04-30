@@ -3,6 +3,9 @@
     package="com.example.shrutib.smartapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -25,7 +28,10 @@
             android:label="@string/title_activity_lights"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".RegisterActivity" />
-        <activity android:name=".StartUpConfigurePiActivity"></activity>
+        <activity android:name=".StartUpConfigurePiActivity" />
+        <activity android:name=".ConfigureDeviceActivity" />
+        <activity android:name=".DiscoverActivity" />
+        <activity android:name=".SmartDevice.ConfigureSmartDevice"></activity>
     </application>
 
 </manifest>

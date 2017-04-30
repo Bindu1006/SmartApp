@@ -1,6 +1,8 @@
 package com.example.shrutib.smartapp;
 
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -10,12 +12,24 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    final static String TARGET_BASE_PATH = "/sdcard/myDB/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onStart() {
         super.onStart();
+
+        copyFile();
 
         Button loginButton = (Button) findViewById(R.id.lightBtn);
         loginButton.setOnClickListener(new Button.OnClickListener() {
@@ -112,6 +128,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void copyFile() {
+
+        InputStream in = getResources().openRawResource(R.raw.oui);
+        FileOutputStream out = null;
+
+        byte[] buff = new byte[1024];
+        int read = 0;
+        try {
+            out = new FileOutputStream(TARGET_BASE_PATH + "/oui.db");
+            while ((read = in.read(buff)) > 0) {
+                out.write(buff, 0, read);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                in.close();
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
 }
