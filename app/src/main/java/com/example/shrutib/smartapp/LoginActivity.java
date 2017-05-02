@@ -15,6 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
+
 public class LoginActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
 
@@ -50,10 +52,22 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
     protected void onStart() {
         super.onStart();
 
+        //Delete Database
+        DatabaseSqlHelper db = new DatabaseSqlHelper(getApplicationContext());
+        db.deleteDatabase();
+
         Button loginButton = (Button) findViewById(R.id.login);
         loginButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(getBaseContext(), MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button signUpButton = (Button) findViewById(R.id.sign_up);
+        signUpButton.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(), RegisterActivity.class);
                 startActivity(intent);
             }
         });

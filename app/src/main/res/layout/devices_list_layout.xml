@@ -3,22 +3,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="80dp"
+        android:src="@drawable/wemo_logo"
+        android:id="@+id/device_logo"/>
+
     <TextView
         android:layout_width="80dp"
         android:layout_height="60dp"
         android:textColor="@color/colorPrimary"
-        android:id="@+id/id_ipAddress">
+        android:id="@+id/device_name">
     </TextView>
 
-
     <ImageView
-        android:id="@+id/id_deleteScheduler"
-        android:layout_width="50dp"
-        android:layout_height="60dp"
-        android:src="@drawable/trash"
-        android:paddingRight="20dp"
-        android:clickable="true"
-        />
+        android:id="@+id/control_device"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginLeft="160dp"
+        android:src="@drawable/switch_off"
+        android:clickable="true" />
 
 
 

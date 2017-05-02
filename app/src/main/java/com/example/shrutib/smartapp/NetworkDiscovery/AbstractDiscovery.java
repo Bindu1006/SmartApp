@@ -11,7 +11,7 @@ import android.util.Log;
 import com.example.shrutib.smartapp.ConfigureDeviceActivity;
 import com.example.shrutib.smartapp.R;
 import com.example.shrutib.smartapp.Utils.Db;
-import com.example.shrutib.smartapp.Utils.DeviceBean;
+import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
 import com.example.shrutib.smartapp.Utils.Prefs;
 
 import java.lang.ref.WeakReference;

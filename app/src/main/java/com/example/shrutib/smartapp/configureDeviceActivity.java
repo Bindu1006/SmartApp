@@ -1,13 +1,8 @@
 package com.example.shrutib.smartapp;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -22,11 +17,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -35,17 +28,12 @@ import android.widget.Toast;
 import com.example.shrutib.smartapp.NetworkDiscovery.AbstractDiscovery;
 import com.example.shrutib.smartapp.NetworkDiscovery.ActivityNet;
 import com.example.shrutib.smartapp.NetworkDiscovery.DefaultDiscovery;
-import com.example.shrutib.smartapp.NetworkDiscovery.DnsDiscovery;
 import com.example.shrutib.smartapp.NetworkDiscovery.NetInfo;
 import com.example.shrutib.smartapp.SmartDevice.ConfigureSmartDevice;
-import com.example.shrutib.smartapp.Utils.Db;
-import com.example.shrutib.smartapp.Utils.DeviceBean;
+import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
 import com.example.shrutib.smartapp.Utils.Prefs;
-import android.widget.AdapterView.OnItemClickListener;
 
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,7 +105,7 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
                 String ipAddress =((TextView)view.findViewById(R.id.mac)).getText().toString();
                 String vendorName =((TextView)view.findViewById(R.id.vendor)).getText().toString();
 
-                setSmartDevice();
+                setSmartDevice(ipAddress, vendorName);
 
 
                 Toast.makeText(ConfigureDeviceActivity.this, "myPos " + i + " " + ipAddress, Toast.LENGTH_LONG).show();
@@ -127,8 +115,10 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
 
     }
 
-    private void setSmartDevice() {
+    private void setSmartDevice(String ipAddress, String vendorInfo) {
         Intent intent = new Intent(getBaseContext(), ConfigureSmartDevice.class);
+        intent.putExtra("VENDOR_INFO", vendorInfo);
+        intent.putExtra("IP_ADDRESS", ipAddress);
         startActivity(intent);
     }
 

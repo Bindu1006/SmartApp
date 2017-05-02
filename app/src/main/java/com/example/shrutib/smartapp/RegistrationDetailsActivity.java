@@ -1,7 +1,6 @@
 package com.example.shrutib.smartapp;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -9,25 +8,31 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
+import android.widget.Button;
+import android.widget.EditText;
 
-import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
+import com.example.shrutib.smartapp.BeanObjects.UserBean;
+import com.example.shrutib.smartapp.Utils.AmazonClientManager;
+import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 
-import java.util.ArrayList;
+public class RegistrationDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-public class LightsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    public static AmazonClientManager clientManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lights);
+        setContentView(R.layout.activity_registration_details);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        clientManager = new AmazonClientManager(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -46,25 +51,31 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        if (checkIfConfiguredDeviceExist()) {
+        Button register = (Button) findViewById(R.id.register);
+        register.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                UserBean userDetails = (UserBean) getIntent().getSerializableExtra("USER_DETAILS");
+                EditText emailEditText = (EditText) findViewById(R.id.register_email);
+                userDetails.setEmail(emailEditText.getText().toString());
+                EditText addressEditText = (EditText) findViewById(R.id.register_address);
+                userDetails.setAddress(addressEditText.getText().toString());
+                EditText phoneEditText = (EditText) findViewById(R.id.register_phone);
+                userDetails.setPhoneNumber(phoneEditText.getText().toString());
 
-            ListView listView =  (ListView) findViewById(R.id.id_AppliancesList);
-            ArrayList<DeviceBean> devicesList = getConnectedSmartDevice();
+                DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+                databaseHelper.registerUser(userDetails);
 
-            LightsListAdapter adapter = new LightsListAdapter(getParent(), this, devicesList);
-            listView.setAdapter(adapter);
-
-        } else {
-            Intent intent = new Intent(getBaseContext(), ConfigureDeviceActivity.class);
-            startActivity(intent);
-        }
-
+                Intent intent = new Intent(getBaseContext(), MainActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -123,34 +134,5 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-    private ArrayList<DeviceBean> getConnectedSmartDevice() {
-        Log.d("LightsActivity :: ", "Entered to fetch connected devices");
-
-//        ArrayList<String> deviceslist = (ArrayList<String>) getIntent().getSerializableExtra("DEVICESCHEDULERLIST");
-        ArrayList<DeviceBean> deviceslist = new ArrayList<DeviceBean>();
-        DeviceBean deviceBean1 = new DeviceBean();
-        deviceBean1.ipAddress = "10.0.0.80";
-        deviceBean1.nicVendor = "Belkin";
-
-        DeviceBean deviceBean2 = new DeviceBean();
-        deviceBean2.ipAddress = "10.0.0.81";
-        deviceBean2.nicVendor = "Belkin";
-
-        deviceslist.add(deviceBean1);
-        deviceslist.add(deviceBean2);
-
-        Log.d("VIEWDEVICE :", deviceslist + " ");
-        return deviceslist;
-
-    }
-
-    private boolean checkIfConfiguredDeviceExist() {
-        Log.d("LightsActivity :: ", "check If Configured Device Exist");
-
-        return false;
-
-
-    }
-
 }
+

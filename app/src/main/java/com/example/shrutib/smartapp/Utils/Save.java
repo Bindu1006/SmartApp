@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
+import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
+
 public class Save {
 
     private static final String TAG = "Save";

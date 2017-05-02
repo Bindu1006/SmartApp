@@ -4,7 +4,7 @@ import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.util.Log;
 
 import com.example.shrutib.smartapp.ConfigureDeviceActivity;
-import com.example.shrutib.smartapp.Utils.DeviceBean;
+import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
 import com.example.shrutib.smartapp.Utils.Prefs;
 
 import java.io.IOException;

@@ -6,6 +6,10 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" />
 
     <application
         android:allowBackup="true"
@@ -31,7 +35,8 @@
         <activity android:name=".StartUpConfigurePiActivity" />
         <activity android:name=".ConfigureDeviceActivity" />
         <activity android:name=".DiscoverActivity" />
-        <activity android:name=".SmartDevice.ConfigureSmartDevice"></activity>
+        <activity android:name=".SmartDevice.ConfigureSmartDevice" />
+        <activity android:name=".RegistrationDetailsActivity"></activity>
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.example.shrutib.smartapp.Utils;
+package com.example.shrutib.smartapp.BeanObjects;
 
 import android.os.Parcel;
 import android.os.Parcelable;

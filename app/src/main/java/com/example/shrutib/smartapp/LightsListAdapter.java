@@ -2,6 +2,7 @@ package com.example.shrutib.smartapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +17,6 @@ import com.amazonaws.mobileconnectors.iot.AWSIotKeystoreHelper;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttClientStatusCallback;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttLastWillAndTestament;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttManager;
-import com.amazonaws.mobileconnectors.iot.AWSIotMqttNewMessageCallback;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttQos;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -24,9 +24,8 @@ import com.amazonaws.services.iot.AWSIotClient;
 import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
-import com.google.gson.JsonElement;
+import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.KeyStore;
@@ -37,7 +36,7 @@ import java.util.UUID;
  * Created by shrutib on 4/13/17.
  */
 
-public class LightsListAdapter extends ArrayAdapter<String> {
+public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
 
     String LOG_TAG = "LightsListAdapter";
 
@@ -75,7 +74,7 @@ public class LightsListAdapter extends ArrayAdapter<String> {
     CognitoCachingCredentialsProvider credentialsProvider;
 
 
-    public LightsListAdapter(Activity act, Context context, ArrayList<String> users) {
+    public LightsListAdapter(Activity act, Context context, ArrayList<DeviceBean> users) {
         super(context, 0, users);
         thisContext = context;
         thisActivity = act;
@@ -196,79 +195,78 @@ public class LightsListAdapter extends ArrayAdapter<String> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        final String ipString = getItem(position);
+        final String ipString = getItem(position).ipAddress;
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.devices_list_layout, parent, false);
         }
+
+//        Connect to Amazon IOS
+
+        try {
+            mqttManager.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
+                @Override
+                public void onStatusChanged(final AWSIotMqttClientStatus status,
+                                            final Throwable throwable) {
+                    Log.d(LOG_TAG, "Status = " + String.valueOf(status));
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (status == AWSIotMqttClientStatus.Connecting) {
+                                Log.e(LOG_TAG, "Connecting...");
+
+                            } else if (status == AWSIotMqttClientStatus.Connected) {
+                                Log.e(LOG_TAG, "Connected");
+
+                            } else if (status == AWSIotMqttClientStatus.Reconnecting) {
+                                if (throwable != null) {
+                                    Log.e(LOG_TAG, "Connection error.", throwable);
+                                }
+                                Log.e(LOG_TAG, "Reconnecting");
+                            } else if (status == AWSIotMqttClientStatus.ConnectionLost) {
+                                if (throwable != null) {
+                                    Log.e(LOG_TAG, "Connection error.", throwable);
+                                }
+                                Log.e(LOG_TAG, "Disconnected");
+                            } else {
+                                Log.e(LOG_TAG, "Disconnected");
+
+                            }
+                        }
+                    });
+                }
+            });
+        } catch (final Exception e) {
+            Log.e(LOG_TAG, "Connection error.", e);
+        }
+
         // Lookup view for data population
-        TextView ipAddress = (TextView) convertView.findViewById(R.id.id_ipAddress);
+        TextView ipAddress = (TextView) convertView.findViewById(R.id.device_name);
 
         // Populate the data into the template view using the data object
         ipAddress.setText(ipString);
 
-        ipAddress.setOnClickListener (new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                Log.d(LOG_TAG, "clientId = " + clientId);
-
-                try {
-                    mqttManager.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
-                        @Override
-                        public void onStatusChanged(final AWSIotMqttClientStatus status,
-                                                    final Throwable throwable) {
-                            Log.d(LOG_TAG, "Status = " + String.valueOf(status));
-
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (status == AWSIotMqttClientStatus.Connecting) {
-                                        Log.e(LOG_TAG, "Connecting...");
-
-                                    } else if (status == AWSIotMqttClientStatus.Connected) {
-                                        Log.e(LOG_TAG, "Connected");
-
-                                    } else if (status == AWSIotMqttClientStatus.Reconnecting) {
-                                        if (throwable != null) {
-                                            Log.e(LOG_TAG, "Connection error.", throwable);
-                                        }
-                                        Log.e(LOG_TAG, "Reconnecting");
-                                    } else if (status == AWSIotMqttClientStatus.ConnectionLost) {
-                                        if (throwable != null) {
-                                            Log.e(LOG_TAG, "Connection error.", throwable);
-                                        }
-                                        Log.e(LOG_TAG, "Disconnected");
-                                    } else {
-                                        Log.e(LOG_TAG, "Disconnected");
-
-                                    }
-                                }
-                            });
-                        }
-                    });
-                } catch (final Exception e) {
-                    Log.e(LOG_TAG, "Connection error.", e);
-                }
-            }
-        });
-
-
-        ImageView imageView = (ImageView) convertView.findViewById(R.id.id_deleteScheduler);
+        final ImageView imageView = (ImageView) convertView.findViewById(R.id.control_device);
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
                 final String topic = "$aws/things/RaspberryPi/shadow/update/test";
 
                 try {
                     JSONObject msg = new JSONObject();
-                    msg.put("ip_address", "10.0.0.80");
-                    msg.put("cmd", "OFF");
+                    msg.put("ip_address", ipString);
+                    msg.put("cmd", "ON");
 
                     mqttManager.publishString(msg.toString(), topic, AWSIotMqttQos.QOS0);
                 } catch (Exception e) {
                     Log.e(LOG_TAG, "Publish error.", e);
                 }
 
+                Drawable id = getContext().getResources().getDrawable(R.drawable.switch_on);
+                imageView.setImageDrawable(id);
                 Toast.makeText(getContext(), "Data Published", Toast.LENGTH_LONG).show();
             }
 
