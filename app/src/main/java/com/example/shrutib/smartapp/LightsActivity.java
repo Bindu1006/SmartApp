@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.ListView;
 
 import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
+import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 
 import java.util.ArrayList;
 
@@ -148,7 +149,15 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
     private boolean checkIfConfiguredDeviceExist() {
         Log.d("LightsActivity :: ", "check If Configured Device Exist");
 
-        return false;
+        DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+        int result = databaseHelper.getDeviceCount();
+
+        if (result > 0) {
+            return true;
+        } else {
+            return false;
+        }
+
 
 
     }

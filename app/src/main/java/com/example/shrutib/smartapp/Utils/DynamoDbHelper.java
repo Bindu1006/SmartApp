@@ -5,6 +5,7 @@ import android.util.Log;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
 import com.example.shrutib.smartapp.BeanObjects.UserBean;
 import com.example.shrutib.smartapp.RegistrationDetailsActivity;
 

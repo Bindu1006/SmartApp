@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 
@@ -53,14 +54,30 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
         super.onStart();
 
         //Delete Database
-        DatabaseSqlHelper db = new DatabaseSqlHelper(getApplicationContext());
-        db.deleteDatabase();
+//        DatabaseSqlHelper db = new DatabaseSqlHelper(getApplicationContext());
+//        db.deleteDatabase();
 
         Button loginButton = (Button) findViewById(R.id.login);
         loginButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                Intent intent = new Intent(getBaseContext(), MainActivity.class);
-                startActivity(intent);
+                DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+
+                EditText userNameText = (EditText) findViewById(R.id.loginUsername);
+                String userName = userNameText.getText().toString();
+
+                EditText passwordText = (EditText) findViewById(R.id.password);
+                String password = passwordText.getText().toString();
+
+                if (userName == null || password == null) {
+//                    TODO show error dialog
+                } else if (databaseHelper.authenticateUser(userName, password)) {
+                    Intent intent = new Intent(getBaseContext(), MainActivity.class);
+                    startActivity(intent);
+                } else {
+                    //                    TODO show error dialog
+                }
+
+
             }
         });
 

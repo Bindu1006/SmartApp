@@ -8,8 +8,22 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <uses-feature android:name="android.hardware.camera" />
+    <!-- Tell the system this app requires OpenGL ES 2.0. -->
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+
+    <!-- rear facing cam -->
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+
+    <!-- users location -->
+    <uses-feature android:name="android.hardware.location" android:required="true" />
+
+    <!-- accelerometer -->
+    <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="true" />
+
+    <!-- compass -->
+    <uses-feature android:name="android.hardware.sensor.compass" android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -34,9 +48,21 @@
         <activity android:name=".RegisterActivity" />
         <activity android:name=".StartUpConfigurePiActivity" />
         <activity android:name=".ConfigureDeviceActivity" />
-        <activity android:name=".DiscoverActivity" />
         <activity android:name=".SmartDevice.ConfigureSmartDevice" />
-        <activity android:name=".RegistrationDetailsActivity"></activity>
+        <activity android:name=".RegistrationDetailsActivity" />
+        <activity android:name=".AugmentedReality.AugmentedMainActivity"></activity>
+
+        <!-- Augmented Reality / activities -->
+        <activity android:name=".AugmentedReality.MainSamplesListActivity"/>
+
+        <!-- cam activities -->
+        <activity android:name=".AugmentedReality.SampleCamActivity" android:configChanges="orientation|keyboardHidden|screenSize"/>
+        <activity android:name=".AugmentedReality.SampleCam2Activity" android:configChanges="orientation|keyboardHidden|screenSize"/>
+        <activity android:name=".AugmentedReality.AutoHdSampleCamActivity" android:configChanges="orientation|keyboardHidden|screenSize"/>
+
+        <!-- poi detail screen -->
+        <activity android:name=".AugmentedReality.SamplePoiDetailActivity"/>
+
     </application>
 
 </manifest>

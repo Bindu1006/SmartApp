@@ -64,7 +64,7 @@
         <Button
             android:layout_width="140dp"
             android:layout_height="120dp"
-            android:id="@+id/securityBtn"
+            android:id="@+id/augmentedBtn"
             android:layout_toRightOf="@+id/sensorsBtn"
             android:layout_marginTop="20dp"
             android:layout_marginLeft="15dp"

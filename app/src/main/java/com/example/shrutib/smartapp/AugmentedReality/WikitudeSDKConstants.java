@@ -1,0 +1,10 @@
+package com.example.shrutib.smartapp.AugmentedReality;
+
+public class WikitudeSDKConstants {
+	
+
+	/**
+	 * note that this key is only valid for this sample app, if you need one for your own application please visit www.wikitude.com (SDK Store)
+	 */
+	protected static final String WIKITUDE_SDK_KEY = "xXTC1lnguJWo0ZPeqHV39gg9w65DUgF2et0j2jHillY6tlWInxgOYbgm5q5cp525QX9s8D3dtOeQRz3zU575zohQI1/u1cpW8vLLnn6zZnqOvjskORKj83Yct+TitS53vi5bc1Fi0hnc1QZiLDUQ0Ln2jsXDPtjvFGUG0X7+lMtTYWx0ZWRfXz4IuyoLc+8/zjLjFSfXtkulWMaQvniqCsu4jRq0a4YuwFUanIJS3CZ4BByrE7j0KRqc6JcGNGgOX/birblXqOCG4LSKaDJ1EMUrJRhaHECbYOyNxsJXnLgCGbnSk/kymctXXOM7vdbvp382m3PLUNyL5XU7WiZovLqUaW4gQwVT0bJpkNKEo1PLjJUVt6fUmWdj/xq/8Pqscl1gP/mTGhne0xWC3gQfFt4Vd8POpa+AZzSYsFv/yqwYuYxT484S7e94XR/dRkTFb54M3O/498pkKZVhXcKCMiNs93wm/c0wacC4ILSwkAq9mlpJoXdW8EcCP7biGf4yuqMtBhW8Rmgft7GW7kjhuJfvvREta9I7Y4SWeWIlvdwOrw8Ys7cUswzOUMBSyUdN5XmKELRnCCzqMMyvFxghZYUQxRGHXN7tBfCyd9c1DAvwThsP6x++5ITnBGAhFg0dyOMPNCl7sfGuy9T9nXGbyuyQ8PbESjY3uB55WGM8PuU=";
+}

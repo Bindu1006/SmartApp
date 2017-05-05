@@ -5,8 +5,9 @@ android {
     buildToolsVersion "25.0.2"
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
+//        com.spectrum.smartapp
         applicationId "com.example.shrutib.smartapp"
-        minSdkVersion 10
+        minSdkVersion 15
         targetSdkVersion 19
         versionCode 1
         versionName "1.0.0"
@@ -32,5 +33,12 @@ dependencies {
     compile 'com.amazonaws:aws-android-sdk-s3:2.2.+'
     compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.2.+'
     compile 'com.amazonaws:aws-android-sdk-ddb:2.2.+'
+    compile (name: 'wikitudesdk', ext:'aar')
     testCompile 'junit:junit:4.12'
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
 }

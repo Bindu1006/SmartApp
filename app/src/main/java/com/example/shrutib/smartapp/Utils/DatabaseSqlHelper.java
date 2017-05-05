@@ -23,7 +23,7 @@ public class DatabaseSqlHelper {
 
     public static final String msg = "DATA CONTROLLER ::: ";
     public static final String USER_TABLE_NAME = "USER_DETAILS";
-    public static final String WEMO_TABLE_NAME = "WEMO_DETAILS";
+    public static final String DEVICE_TABLE_NAME = "DEVICE_DETAILS";
     public static final String ALARM_TABLE_NAME = "ALARM_DETAILS";
     public static final String KEYS_TABLE_NAME = "PUBNUB_KEYS_DETAILS";
     public static final String VIDEO_TABLE_NAME = "VIDEO_STATUS_DETAILS";
@@ -33,18 +33,15 @@ public class DatabaseSqlHelper {
 //    public static final String VIDEO_CREATE_QUERY = "create table VIDEO_STATUS_DETAILS (VIDEO_ID text PRIMARY KEY, VIDEO_STATUS text not null, PHONE_NUMBER text, MESSAGE_SENT text);";
 //
 //    public static final String KEYS_CREATE_QUERY = "create table PUBNUB_KEYS_DETAILS (PUBLISH_KEYS text PRIMARY KEY, SUBSCRIBE_KEYS text not null);";
-//
-//    public static final String WEMO_CREATE_QUERY = "create table WEMO_DETAILS (DEVICE_IP text PRIMARY KEY, DEVICE_NAME text not null,DEVICE_STATUS text not null );";
-//
+
+    public static final String DEVICE_CREATE_QUERY = "create table DEVICE_DETAILS (DEVICE_IP text PRIMARY KEY, DEVICE_NAME text not null,DEVICE_STATUS text not null, VENDOR_NAME text not null );";
+
 //    public static final String ALARM_CREATE_QUERY = "create table ALARM_DETAILS (_id text PRIMARY KEY, DEVICE_NAME text not null,DEVICE_IP text not null, DEVICE_STATUS text not null, ALARM_TIME text not null);";
 
     public static final String DATABASE_NAME = "PIHOME.db";
     public static final int DATABASE_VERSION = 4;
 
-    public static final String WEMO_DROP_QUERY = "DROP TABLE IF EXISTS WEMO_DETAILS";
-    public static final String LED_DROP_QUERY = "DROP TABLE IF EXISTS LED_DETAILS";
-    public static final String KEYS_DROP_QUERY = "DROP TABLE IF EXISTS PUBNUB_KEYS_DETAILS";
-    public static final String VIDEO_DROP_QUERY = "DROP TABLE IF EXISTS VIDEO_STATUS_DETAILS";
+    public static final String DEVICE_DROP_QUERY = "DROP TABLE IF EXISTS DEVICE_DETAILS";
 
     Context context;
     DataBaseHelper databaseHelper;
@@ -62,7 +59,7 @@ public class DatabaseSqlHelper {
             // TODO Auto-generated method stub
             try {
                 db.execSQL(USER_CREATE_QUERY);
-//                db.execSQL(WEMO_CREATE_QUERY);
+                db.execSQL(DEVICE_CREATE_QUERY);
 //                db.execSQL(ALARM_CREATE_QUERY);
 //                db.execSQL(KEYS_CREATE_QUERY);
 //                db.execSQL(VIDEO_CREATE_QUERY);
@@ -75,7 +72,7 @@ public class DatabaseSqlHelper {
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             // TODO Auto-generated method stub
             db.execSQL(USER_CREATE_QUERY);
-//            db.execSQL(WEMO_CREATE_QUERY);
+            db.execSQL(DEVICE_CREATE_QUERY);
 //            db.execSQL(ALARM_CREATE_QUERY);
 //            db.execSQL(KEYS_CREATE_QUERY);
 //            db.execSQL(VIDEO_CREATE_QUERY);
@@ -98,14 +95,14 @@ public class DatabaseSqlHelper {
         databaseHelper.close();
     }
 
-    public void deleteDatabase() {
-
-        Log.d("Delete User Details : ", "Database");
-        database = databaseHelper.getWritableDatabase();
-        database.delete(USER_TABLE_NAME, null, null);
-        database.close();
-
-    }
+//    public void deleteDatabase() {
+//
+//        Log.d("Delete User Details : ", "Database");
+//        database = databaseHelper.getWritableDatabase();
+//        database.delete(USER_TABLE_NAME, null, null);
+//        database.close();
+//
+//    }
 
     public void registerUser(UserBean userDetails) {
 
@@ -148,6 +145,31 @@ public class DatabaseSqlHelper {
 
     }
 
+    public boolean authenticateUser(String username, String password) {
+
+        Log.d("Authenticate User : ", username);
+
+        database = databaseHelper.getWritableDatabase();
+        String authenticateQuery = "SELECT * FROM " + USER_TABLE_NAME + " where USERNAME = \""+username +"\" and PASSWORD = \""+password +"\"";
+        Cursor cursor      = database.rawQuery(authenticateQuery, null);
+        String retrievedUsername = null;
+        String retrievedPassword = null;
+
+        if (cursor.moveToFirst()) {
+            do {
+                retrievedUsername = cursor.getString(0);
+                retrievedPassword = cursor.getString(1);
+            } while (cursor.moveToNext());
+        }
+
+        if (username.equals(retrievedUsername) && password.equals(retrievedPassword)) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
 
 
     public void insertSmartDeviceData(DeviceBean deviceDetails) {
@@ -160,13 +182,15 @@ public class DatabaseSqlHelper {
 //            deviceDetails.setDeviceStatus("DEVICE_OFF");
 //        }
 //
-//        ContentValues deviceValues = new ContentValues();
-//        deviceValues.put("DEVICE_NAME", deviceDetails.getDeviceName());
-//        deviceValues.put("DEVICE_IP", deviceDetails.getDeviceIpAddress());
-//        deviceValues.put("DEVICE_STATUS", deviceDetails.getDeviceStatus());
+        ContentValues deviceValues = new ContentValues();
+        deviceValues.put("DEVICE_NAME", deviceDetails.getDeviceName());
+        deviceValues.put("DEVICE_IP", deviceDetails.getDeviceIpAddress());
+        deviceValues.put("DEVICE_STATUS", deviceDetails.getDeviceStatus());
+        deviceValues.put("VENDOR_NAME", deviceDetails.getVendor());
+
 //
-//        database.insertOrThrow(WEMO_TABLE_NAME, null, deviceValues);
-//        database.close();
+        database.insertOrThrow(DEVICE_TABLE_NAME, null, deviceValues);
+        database.close();
 
     }
 
@@ -198,6 +222,46 @@ public class DatabaseSqlHelper {
         return null;
 
     }
+
+    public int getDeviceCount(){
+
+        Log.d("Get Device Count : ", "Device Details");
+        database = databaseHelper.getWritableDatabase();
+        String countQuery = "SELECT COUNT(*) FROM " + DEVICE_TABLE_NAME;
+        Cursor cursor      = database.rawQuery(countQuery, null);
+        int result = 0;
+        if (cursor.moveToFirst()) {
+            do {
+                result = cursor.getInt(0);
+            } while (cursor.moveToNext());
+        }
+        Log.d("Count data : ", "Count :" + result);
+        cursor.close();
+        database.close();
+        return result;
+
+    }
+
+    public String getDeviceStatus(String ipAddress){
+
+        Log.d("Get Device Status : ", "Device Details");
+        database = databaseHelper.getWritableDatabase();
+        String countQuery = "SELECT DEVICE_STATUS FROM " + DEVICE_TABLE_NAME + " where DEVICE_IP = " + ipAddress;
+        Cursor cursor      = database.rawQuery(countQuery, null);
+        String status = null;
+        if (cursor.moveToFirst()) {
+            do {
+                status = cursor.getString(0);
+            } while (cursor.moveToNext());
+        }
+        Log.d("Status data : ", "Status :" + status);
+        cursor.close();
+        database.close();
+        return status;
+
+    }
+
+
 
     public void updateStatus(String ipAddr, String switchStatus){
 

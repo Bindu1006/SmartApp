@@ -28,8 +28,11 @@ import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
+import com.example.shrutib.smartapp.BeanObjects.UserBean;
 import com.example.shrutib.smartapp.LightsActivity;
 import com.example.shrutib.smartapp.R;
+import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -133,14 +136,33 @@ public class ConfigureSmartDevice extends AppCompatActivity implements Navigatio
     protected void onStart() {
         super.onStart();
 
-        String vendorInfo = getIntent().getStringExtra("VENDOR_INFO");
-        String ipAddress = getIntent().getStringExtra("IP_ADDRESS");
+        final String vendorInfo = getIntent().getStringExtra("VENDOR_INFO");
+        final String ipAddress = getIntent().getStringExtra("IP_ADDRESS");
 
         Button storeDeviceDetails = (Button) findViewById(R.id.store_device);
         storeDeviceDetails.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                
-//                TODO Store Info in SQLite DB
+
+                EditText deviceNameText = (EditText) findViewById(R.id.device_name);
+                String deviceName = deviceNameText.getText().toString();
+
+                if (vendorInfo != null && ipAddress != null) {
+                    DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+
+                    DeviceBean deviceBean = new DeviceBean();
+                    deviceBean.setDeviceIpAddress(ipAddress);
+                    deviceBean.setVendor(vendorInfo);
+                    deviceBean.setDeviceName(deviceName);
+
+                    String status = databaseHelper.getDeviceStatus(ipAddress);
+                    if (status.equalsIgnoreCase("OFF")) {
+                        deviceBean.setDeviceStatus("ON");
+                    } else {
+                        deviceBean.setDeviceStatus("OFF");
+                    }
+
+                    databaseHelper.insertSmartDeviceData(deviceBean);
+                }
 
             }
         });
@@ -149,7 +171,6 @@ public class ConfigureSmartDevice extends AppCompatActivity implements Navigatio
         uploadImage.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
 
-//                TODO Upload image
                 if (checkCameraHardware(getApplicationContext())) {
                     EditText emailEditText = (EditText) findViewById(R.id.device_name);
                     DEVICE_NAME = emailEditText.getText().toString();

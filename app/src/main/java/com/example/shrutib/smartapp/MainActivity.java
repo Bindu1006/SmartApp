@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.shrutib.smartapp.AugmentedReality.AugmentedMainActivity;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -71,6 +73,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
             }
         });
+
+        Button augmentedButton = (Button) findViewById(R.id.augmentedBtn);
+        augmentedButton.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(), AugmentedMainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
+
     }
 
     @Override

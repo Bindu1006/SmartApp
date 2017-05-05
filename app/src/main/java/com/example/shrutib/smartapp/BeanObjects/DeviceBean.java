@@ -41,6 +41,47 @@ public class DeviceBean implements Parcelable {
     public ArrayList<Integer> portsOpen = null;
     public ArrayList<Integer> portsClosed = null;
 
+
+    private String deviceIpAddress;
+
+    private String vendor;
+
+    private String deviceName;
+
+    private String deviceStatus;
+
+    public String getDeviceIpAddress() {
+        return deviceIpAddress;
+    }
+
+    public void setDeviceIpAddress(String deviceIpAddress) {
+        this.deviceIpAddress = deviceIpAddress;
+    }
+
+    public String getVendor() {
+        return vendor;
+    }
+
+    public void setVendor(String vendor) {
+        this.vendor = vendor;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    public String getDeviceStatus() {
+        return deviceStatus;
+    }
+
+    public void setDeviceStatus(String deviceStatus) {
+        this.deviceStatus = deviceStatus;
+    }
+
     public DeviceBean() {
         // New object
     }
