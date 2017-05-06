@@ -448,7 +448,6 @@ public class DatabaseSqlHelper {
 
     public boolean savePhoneNumber(String phoneNumber){
         boolean result = false;
-        //Check if any data already exists
 
         database = databaseHelper.getWritableDatabase();
         String retrieveQuery = "SELECT VIDEO_ID FROM " + VIDEO_TABLE_NAME;
