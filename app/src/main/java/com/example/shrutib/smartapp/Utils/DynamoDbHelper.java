@@ -30,7 +30,7 @@ public class DynamoDbHelper {
             Log.d(TAG, "Users inserted");
 
         } catch (AmazonServiceException ex) {
-            Log.e(TAG, "Error inserting users");
+            Log.e(TAG, "Error in inserting users");
             RegistrationDetailsActivity.clientManager
                     .wipeCredentialsOnAuthError(ex);
         }
