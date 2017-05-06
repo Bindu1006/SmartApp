@@ -10,18 +10,28 @@
         android:id="@+id/device_logo"/>
 
     <TextView
-        android:layout_width="80dp"
-        android:layout_height="60dp"
-        android:textColor="@color/colorPrimary"
+        android:layout_width="160dp"
+        android:layout_height="80dp"
+        android:textColor="@color/blackText"
+        android:textSize="30dp"
+        android:gravity="center_vertical"
         android:id="@+id/device_name">
     </TextView>
 
     <ImageView
         android:id="@+id/control_device"
-        android:layout_width="80dp"
+        android:layout_width="60dp"
         android:layout_height="80dp"
-        android:layout_marginLeft="160dp"
+        android:layout_marginLeft="10dp"
         android:src="@drawable/switch_off"
+        android:clickable="true" />
+
+    <ImageView
+        android:id="@+id/alarm_device"
+        android:layout_width="60dp"
+        android:layout_height="80dp"
+        android:layout_marginLeft="15dp"
+        android:src="@drawable/ic_launcher"
         android:clickable="true" />
 
 

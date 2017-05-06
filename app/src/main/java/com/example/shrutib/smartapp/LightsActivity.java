@@ -23,6 +23,8 @@ import java.util.ArrayList;
 
 public class LightsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+    DatabaseSqlHelper databaseHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +55,7 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
     protected void onStart() {
         super.onStart();
 
+        databaseHelper = new DatabaseSqlHelper(getApplicationContext());
         if (checkIfConfiguredDeviceExist()) {
 
             ListView listView =  (ListView) findViewById(R.id.id_AppliancesList);
@@ -81,7 +84,7 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.login2, menu);
+        getMenuInflater().inflate(R.menu.lights_menu, menu);
         return true;
     }
 
@@ -95,6 +98,11 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }
+
+        if (id == R.id.action_add_device) {
+            Intent intent = new Intent(getBaseContext(), ConfigureDeviceActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -128,20 +136,9 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
     private ArrayList<DeviceBean> getConnectedSmartDevice() {
         Log.d("LightsActivity :: ", "Entered to fetch connected devices");
 
-//        ArrayList<String> deviceslist = (ArrayList<String>) getIntent().getSerializableExtra("DEVICESCHEDULERLIST");
-        ArrayList<DeviceBean> deviceslist = new ArrayList<DeviceBean>();
-        DeviceBean deviceBean1 = new DeviceBean();
-        deviceBean1.ipAddress = "10.0.0.80";
-        deviceBean1.nicVendor = "Belkin";
+        DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+        ArrayList<DeviceBean> deviceslist = databaseHelper.getAllDeviceDetails();
 
-        DeviceBean deviceBean2 = new DeviceBean();
-        deviceBean2.ipAddress = "10.0.0.81";
-        deviceBean2.nicVendor = "Belkin";
-
-        deviceslist.add(deviceBean1);
-        deviceslist.add(deviceBean2);
-
-        Log.d("VIEWDEVICE :", deviceslist + " ");
         return deviceslist;
 
     }
@@ -149,7 +146,6 @@ public class LightsActivity extends AppCompatActivity implements NavigationView.
     private boolean checkIfConfiguredDeviceExist() {
         Log.d("LightsActivity :: ", "check If Configured Device Exist");
 
-        DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
         int result = databaseHelper.getDeviceCount();
 
         if (result > 0) {

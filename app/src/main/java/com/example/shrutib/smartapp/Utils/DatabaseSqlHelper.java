@@ -47,6 +47,7 @@ public class DatabaseSqlHelper {
     DataBaseHelper databaseHelper;
     SQLiteDatabase database;
     private UserBean userInfo = null;
+    private DeviceBean deviceInfo = null;
 
     private static class DataBaseHelper extends SQLiteOpenHelper {
 
@@ -56,7 +57,6 @@ public class DatabaseSqlHelper {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            // TODO Auto-generated method stub
             try {
                 db.execSQL(USER_CREATE_QUERY);
                 db.execSQL(DEVICE_CREATE_QUERY);
@@ -120,8 +120,8 @@ public class DatabaseSqlHelper {
         database.close();
 
         userInfo = userDetails;
+        // Insert in Dynamo DB also
         new InsertUserTask().execute();
-//        TODO Insert in Dynamo DB also
 
     }
 
@@ -134,6 +134,25 @@ public class DatabaseSqlHelper {
         Cursor cursor      = database.rawQuery(selectQuery, null);
         UserBean retrievedUserDetails = null;
 //        ArrayList<IPAddressDetails> deviceDetailsList = new ArrayList<IPAddressDetails>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                retrievedUserDetails = new UserBean(cursor.getString(0), cursor.getString(1),
+                        cursor.getString(2), cursor.getString(3), cursor.getString(4));
+            } while (cursor.moveToNext());
+        }
+        return retrievedUserDetails;
+
+    }
+
+    public UserBean getUserDetails() {
+
+        Log.d("DAtabase : ","get User Data ");
+
+        database = databaseHelper.getWritableDatabase();
+        String selectQuery = "SELECT * FROM " + USER_TABLE_NAME;
+        Cursor cursor      = database.rawQuery(selectQuery, null);
+        UserBean retrievedUserDetails = null;
 
         if (cursor.moveToFirst()) {
             do {
@@ -162,6 +181,8 @@ public class DatabaseSqlHelper {
             } while (cursor.moveToNext());
         }
 
+        Log.d("Shruti","Username: "+retrievedUsername);
+
         if (username.equals(retrievedUsername) && password.equals(retrievedPassword)) {
             return true;
         } else {
@@ -175,51 +196,45 @@ public class DatabaseSqlHelper {
     public void insertSmartDeviceData(DeviceBean deviceDetails) {
 
         Log.d("Insert Smart Device : ", "Device Details");
-//        database = databaseHelper.getWritableDatabase();
-//        if (deviceDetails.getDeviceStatus().equalsIgnoreCase("ON")) {
-//            deviceDetails.setDeviceStatus("DEVICE_ON");
-//        } else if (deviceDetails.getDeviceStatus().equalsIgnoreCase("OFF")) {
-//            deviceDetails.setDeviceStatus("DEVICE_OFF");
-//        }
-//
+
         ContentValues deviceValues = new ContentValues();
         deviceValues.put("DEVICE_NAME", deviceDetails.getDeviceName());
         deviceValues.put("DEVICE_IP", deviceDetails.getDeviceIpAddress());
         deviceValues.put("DEVICE_STATUS", deviceDetails.getDeviceStatus());
         deviceValues.put("VENDOR_NAME", deviceDetails.getVendor());
 
-//
         database.insertOrThrow(DEVICE_TABLE_NAME, null, deviceValues);
         database.close();
+
+        userInfo = getUserDetails();
+        deviceInfo = deviceDetails;
+
+        // Insert in Dynamo DB also
+        new InsertUserDeviceDetails().execute();
 
     }
 
     public ArrayList<DeviceBean> getAllDeviceDetails(){
 
         Log.d("Retrieve Device Data : ", "Device Details");
-//        database = databaseHelper.getWritableDatabase();
-//        String selectQuery = "SELECT * FROM " + WEMO_TABLE_NAME;
-//        Cursor cursor      = database.rawQuery(selectQuery, null);
-//        ArrayList<IPAddressDetails> deviceDetailsList = new ArrayList<IPAddressDetails>();
-//        String[] data      = null;
-//
-//
-//        if (cursor.moveToFirst()) {
-//            do {
-//                IPAddressDetails deviceDetails = new IPAddressDetails();
-//                deviceDetails.setDeviceName(cursor.getString(1));
-//                deviceDetails.setDeviceIpAddress(cursor.getString(0));
-//                deviceDetails.setDeviceStatus(cursor.getString(2));
-//                deviceDetailsList.add(deviceDetails);
-//
-//            } while (cursor.moveToNext());
-//        }
-//        Log.d("DATA : ", "LIST :" + deviceDetailsList);
-//
-//        cursor.close();
-//        database.close();
-//        return deviceDetailsList;
-        return null;
+        database = databaseHelper.getWritableDatabase();
+        String countQuery = "SELECT * FROM " + DEVICE_TABLE_NAME;
+        Cursor cursor      = database.rawQuery(countQuery, null);
+        ArrayList<DeviceBean> deviceslist = new ArrayList<DeviceBean>();
+        if (cursor.moveToFirst()) {
+            do {
+                DeviceBean device = new DeviceBean();
+                device.setDeviceIpAddress(cursor.getString(0));
+                device.setDeviceName(cursor.getString(1));
+                device.setDeviceStatus(cursor.getString(2));
+                device.setVendor(cursor.getString(3));
+                deviceslist.add(device);
+            } while (cursor.moveToNext());
+        }
+        Log.d("Count data : ", "Count :" + deviceslist.size());
+        cursor.close();
+        database.close();
+        return deviceslist;
 
     }
 
@@ -543,6 +558,16 @@ public class DatabaseSqlHelper {
         protected Void doInBackground(Void... voids) {
 
             DynamoDbHelper.insertUsers(userInfo);
+
+            return null;
+        }
+    }
+
+    private class InsertUserDeviceDetails extends AsyncTask<Void, Void, Void> {
+
+        protected Void doInBackground(Void... voids) {
+
+            DynamoDbHelper.insertUserDeviceInfo(userInfo, deviceInfo);
 
             return null;
         }

@@ -25,6 +25,7 @@ import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
 import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
+import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 
 import org.json.JSONObject;
 
@@ -196,6 +197,7 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         final String ipString = getItem(position).ipAddress;
+        final String deviceName = getItem(position).getDeviceName();
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.devices_list_layout, parent, false);
         }
@@ -244,7 +246,7 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
         TextView ipAddress = (TextView) convertView.findViewById(R.id.device_name);
 
         // Populate the data into the template view using the data object
-        ipAddress.setText(ipString);
+        ipAddress.setText(deviceName);
 
 
         final ImageView imageView = (ImageView) convertView.findViewById(R.id.control_device);
@@ -252,21 +254,34 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
             @Override
             public void onClick(View v) {
 
-
+                DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(thisContext);
+                String status = databaseHelper.getDeviceStatus(ipString);
                 final String topic = "$aws/things/RaspberryPi/shadow/update/test";
 
                 try {
+
                     JSONObject msg = new JSONObject();
                     msg.put("ip_address", ipString);
-                    msg.put("cmd", "ON");
+
+                    if (status.equalsIgnoreCase("OFF")) {
+                        msg.put("cmd", "ON");
+                    } else {
+                        msg.put("cmd", "OFF");
+                    }
 
                     mqttManager.publishString(msg.toString(), topic, AWSIotMqttQos.QOS0);
                 } catch (Exception e) {
                     Log.e(LOG_TAG, "Publish error.", e);
                 }
 
-                Drawable id = getContext().getResources().getDrawable(R.drawable.switch_on);
-                imageView.setImageDrawable(id);
+                if (status.equalsIgnoreCase("OFF")) {
+                    Drawable id = getContext().getResources().getDrawable(R.drawable.switch_on);
+                    imageView.setImageDrawable(id);
+                } else {
+                    Drawable id = getContext().getResources().getDrawable(R.drawable.switch_off);
+                    imageView.setImageDrawable(id);
+                }
+
                 Toast.makeText(getContext(), "Data Published", Toast.LENGTH_LONG).show();
             }
 

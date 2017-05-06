@@ -22,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -310,12 +311,16 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
         Log.d("Shruti","Start discovery");
         mDiscoveryTask = new DefaultDiscovery(ConfigureDeviceActivity.this);
 
+        final ProgressBar  deviceProgressBar = (ProgressBar) findViewById(R.id.deviceProgressBar);
+        deviceProgressBar.setVisibility(View.VISIBLE);
+
         mDiscoveryTask.setNetwork(network_ip, network_start, network_end);
         mDiscoveryTask.execute();
         btn_discover.setText(R.string.btn_discover_cancel);
         setButton(btn_discover, R.drawable.cancel, false);
         btn_discover.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                deviceProgressBar.setVisibility(View.GONE);
                 cancelTasks();
             }
         });
@@ -332,6 +337,8 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
                 startDiscovering();
             }
         });
+        final ProgressBar  deviceProgressBar = (ProgressBar) findViewById(R.id.deviceProgressBar);
+        deviceProgressBar.setVisibility(View.GONE);
         btn_discover.setText(R.string.discover);
     }
 
@@ -370,5 +377,15 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
         b.setClickable(true);
         b.setEnabled(true);
         b.setCompoundDrawablesWithIntrinsicBounds(drawable, 0, 0, 0);
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 }

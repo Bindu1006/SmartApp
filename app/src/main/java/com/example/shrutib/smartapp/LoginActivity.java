@@ -1,5 +1,6 @@
 package com.example.shrutib.smartapp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -7,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -61,6 +63,7 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
         loginButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+                AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
 
                 EditText userNameText = (EditText) findViewById(R.id.loginUsername);
                 String userName = userNameText.getText().toString();
@@ -68,14 +71,39 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
                 EditText passwordText = (EditText) findViewById(R.id.password);
                 String password = passwordText.getText().toString();
 
-                if (userName == null || password == null) {
-//                    TODO show error dialog
-                } else if (databaseHelper.authenticateUser(userName, password)) {
+                if (userName.equals("")|| password.equals("")) {
+
+                    alertDialog.setTitle("Error");
+                    alertDialog.setMessage("Please provide a username and password");
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+
+                } else {
                     Intent intent = new Intent(getBaseContext(), MainActivity.class);
                     startActivity(intent);
-                } else {
-                    //                    TODO show error dialog
                 }
+
+
+//                else if (databaseHelper.authenticateUser(userName, password)) {
+//                    Intent intent = new Intent(getBaseContext(), MainActivity.class);
+//                    startActivity(intent);
+//                } else {
+//
+//                    alertDialog.setTitle("Login Failed");
+//                    alertDialog.setMessage("Username or password does not match. Please re-enter");
+//                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+//                            new DialogInterface.OnClickListener() {
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    dialog.dismiss();
+//                                }
+//                            });
+//                    alertDialog.show();
+//                }
 
 
             }
