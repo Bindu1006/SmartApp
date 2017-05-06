@@ -27,7 +27,7 @@ public class DynamoDbHelper {
 
             Log.d(TAG, "Inserting users");
             mapper.save(userDetails);
-            Log.d(TAG, "Users inserted");
+            Log.d(TAG, "Users are inserted");
 
         } catch (AmazonServiceException ex) {
             Log.e(TAG, "Error in inserting users");
