@@ -33,6 +33,7 @@ dependencies {
     compile 'com.amazonaws:aws-android-sdk-s3:2.2.+'
     compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.2.+'
     compile 'com.amazonaws:aws-android-sdk-ddb:2.2.+'
+    compile 'com.google.android.gms:play-services-location:8.4.0'
     compile (name: 'wikitudesdk', ext:'aar')
     testCompile 'junit:junit:4.12'
 }

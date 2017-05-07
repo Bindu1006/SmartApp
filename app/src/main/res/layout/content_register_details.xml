@@ -35,15 +35,46 @@
         android:layout_centerHorizontal="true"
         android:background="@drawable/edittext" />
 
-    <EditText
+    <!--<EditText-->
+        <!--android:layout_width="300dp"-->
+        <!--android:layout_height="40dp"-->
+        <!--android:id="@+id/register_address"-->
+        <!--android:layout_below="@+id/register_phone"-->
+        <!--android:layout_marginTop="40dp"-->
+        <!--android:hint="Address"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:background="@drawable/edittext" />-->
+
+    <AutoCompleteTextView
+        android:id="@+id/autocomplete_places"
         android:layout_width="300dp"
         android:layout_height="40dp"
-        android:id="@+id/register_address"
+        android:layout_gravity="center_horizontal"
         android:layout_below="@+id/register_phone"
         android:layout_marginTop="40dp"
-        android:hint="Address"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/edittext" />
+        android:background="@drawable/edittext"
+        android:hint="Enter Address"
+        android:singleLine="true" />
+
+    <!--<TextView-->
+        <!--android:id="@+id/place_details"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:autoLink="all"-->
+        <!--android:text=""-->
+        <!--android:layout_below="@id/autocomplete_places"-->
+        <!--android:textAppearance="?android:attr/textAppearanceMedium" />-->
+
+    <!--<TextView-->
+        <!--android:id="@+id/place_attribution"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:autoLink="all"-->
+        <!--android:text=""-->
+        <!--android:layout_below="@id/place_details"-->
+        <!--android:paddingTop="@dimen/vertical_page_margin"-->
+        <!--android:textAppearance="?android:attr/textAppearanceSmall" />-->
 
     <Button
         android:id="@+id/register"

@@ -203,7 +203,6 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
         }
 
 //        Connect to Amazon IOS
-
         try {
             mqttManager.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
                 @Override
