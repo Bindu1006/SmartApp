@@ -2,16 +2,23 @@ package com.example.shrutib.smartapp.Utils;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
 import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
 import com.example.shrutib.smartapp.BeanObjects.UserBean;
+import com.example.shrutib.smartapp.LightsActivity;
+import com.example.shrutib.smartapp.MainActivity;
 
 import java.util.ArrayList;
 
@@ -23,6 +30,7 @@ public class DatabaseSqlHelper {
 
     public static final String msg = "DATA CONTROLLER ::: ";
     public static final String USER_TABLE_NAME = "USER_DETAILS";
+    public static final String USER_DEVICE_TABLE_NAME = "USER_DEVICE_DETAILS";
     public static final String DEVICE_TABLE_NAME = "DEVICE_DETAILS";
     public static final String ALARM_TABLE_NAME = "ALARM_DETAILS";
     public static final String KEYS_TABLE_NAME = "PUBNUB_KEYS_DETAILS";
@@ -104,9 +112,10 @@ public class DatabaseSqlHelper {
 //
 //    }
 
-    public void registerUser(UserBean userDetails) {
+    public boolean registerUser(UserBean userDetails) {
 
         Log.d("Insert User Details : ", userDetails.toString());
+        boolean result = true;
         database = databaseHelper.getWritableDatabase();
 
         ContentValues userValues = new ContentValues();
@@ -116,12 +125,21 @@ public class DatabaseSqlHelper {
         userValues.put("EMAIL", userDetails.getEmail());
         userValues.put("ADDRESS", userDetails.getAddress());
 
-        database.insertOrThrow(USER_TABLE_NAME, null, userValues);
-        database.close();
+        try{
+            database.insert(USER_TABLE_NAME, null, userValues);
+        }catch(SQLiteConstraintException e){
+            Log.e("Database Exception",   "This code doesn't show");
+            result = false;
+        } finally {
+            database.close();
+        }
 
-        userInfo = userDetails;
-        // Insert in Dynamo DB also
-        new InsertUserTask().execute();
+        if (result) {
+            // Insert in Dynamo DB also
+            userInfo = userDetails;
+            new InsertUserTask().execute();
+        }
+        return result;
 
     }
 
@@ -141,6 +159,7 @@ public class DatabaseSqlHelper {
                         cursor.getString(2), cursor.getString(3), cursor.getString(4));
             } while (cursor.moveToNext());
         }
+        database.close();
         return retrievedUserDetails;
 
     }
@@ -160,7 +179,27 @@ public class DatabaseSqlHelper {
                         cursor.getString(2), cursor.getString(3), cursor.getString(4));
             } while (cursor.moveToNext());
         }
+        database.close();
         return retrievedUserDetails;
+
+    }
+
+    public int getUserCount() {
+
+        Log.d("DAtabase : ","get User count ");
+
+        database = databaseHelper.getWritableDatabase();
+        String selectQuery = "SELECT count(*) FROM " + USER_TABLE_NAME;
+        Cursor cursor      = database.rawQuery(selectQuery, null);
+        int userCount = 0;
+
+        if (cursor.moveToFirst()) {
+            do {
+                userCount = cursor.getInt(0);
+            } while (cursor.moveToNext());
+        }
+        database.close();
+        return userCount;
 
     }
 
@@ -182,6 +221,7 @@ public class DatabaseSqlHelper {
         }
 
         Log.d("Shruti","Username: "+retrievedUsername);
+        database.close();
 
         if (username.equals(retrievedUsername) && password.equals(retrievedPassword)) {
             return true;
@@ -193,24 +233,78 @@ public class DatabaseSqlHelper {
 
 
 
-    public void insertSmartDeviceData(DeviceBean deviceDetails) {
+    public boolean insertSmartDeviceData(DeviceBean deviceDetails) {
 
-        Log.d("Insert Smart Device : ", "Device Details");
+        Log.d("Insert Smart Device : ", " "+deviceDetails);
+        boolean result = true;
 
+        database = databaseHelper.getWritableDatabase();
         ContentValues deviceValues = new ContentValues();
         deviceValues.put("DEVICE_NAME", deviceDetails.getDeviceName());
         deviceValues.put("DEVICE_IP", deviceDetails.getDeviceIpAddress());
         deviceValues.put("DEVICE_STATUS", deviceDetails.getDeviceStatus());
         deviceValues.put("VENDOR_NAME", deviceDetails.getVendor());
 
-        database.insertOrThrow(DEVICE_TABLE_NAME, null, deviceValues);
-        database.close();
+        try{
+            database.insert(DEVICE_TABLE_NAME, null, deviceValues);
+        }catch(SQLiteConstraintException e){
+            Log.e("Database Exception",   "This code doesn't show");
+            result = false;
+        } finally {
+            database.close();
+        }
+
+        if (result) {
+            insertDynamoSmartDeviceData(deviceDetails);
+        }
+
+        return result;
+
+    }
+
+    public void insertDynamoSmartDeviceData(DeviceBean deviceDetails) {
+
+        Log.d("Insert Smart Device : ", "Dynamo DB");
 
         userInfo = getUserDetails();
         deviceInfo = deviceDetails;
-
-        // Insert in Dynamo DB also
         new InsertUserDeviceDetails().execute();
+
+    }
+
+    public void deleteSmartDeviceData(DeviceBean deviceDetails) {
+
+        Log.d("Delete Smart Device : ", "Device Details");
+        boolean result = true;
+
+        database = databaseHelper.getWritableDatabase();
+
+        try{
+            database.delete(DEVICE_TABLE_NAME, "DEVICE_IP = ?",
+                    new String[] { String.valueOf(deviceDetails.getDeviceIpAddress()) });
+        }catch(SQLiteConstraintException e){
+            Log.e("Database Exception",   "This code doesn't show");
+            result = false;
+        } finally {
+            database.close();
+        }
+
+    }
+
+    public void deleteUserData(UserBean userDetails) {
+
+        Log.d("Delete User : ", "User : " +userDetails);
+
+        database = databaseHelper.getWritableDatabase();
+
+        try{
+            database.delete(USER_TABLE_NAME, "USERNAME = ?",
+                    new String[] { String.valueOf(userDetails.getUserName()) });
+        }catch(SQLiteConstraintException e){
+            Log.e("Database Exception",   "This code doesn't show");
+        } finally {
+            database.close();
+        }
 
     }
 
@@ -228,6 +322,7 @@ public class DatabaseSqlHelper {
                 device.setDeviceName(cursor.getString(1));
                 device.setDeviceStatus(cursor.getString(2));
                 device.setVendor(cursor.getString(3));
+                Log.d("Shruti : ", "device :" + device);
                 deviceslist.add(device);
             } while (cursor.moveToNext());
         }
@@ -261,7 +356,8 @@ public class DatabaseSqlHelper {
 
         Log.d("Get Device Status : ", "Device Details");
         database = databaseHelper.getWritableDatabase();
-        String countQuery = "SELECT DEVICE_STATUS FROM " + DEVICE_TABLE_NAME + " where DEVICE_IP = " + ipAddress;
+        String countQuery = "SELECT DEVICE_STATUS FROM " + DEVICE_TABLE_NAME + " where DEVICE_IP  = \""+ ipAddress +"\"";
+
         Cursor cursor      = database.rawQuery(countQuery, null);
         String status = null;
         if (cursor.moveToFirst()) {
@@ -276,31 +372,20 @@ public class DatabaseSqlHelper {
 
     }
 
+    public void updateDeviceStatus(String ipAddress, String status){
 
+        Log.d("Get Device Status : ", "Device Details");
+        database = databaseHelper.getWritableDatabase();
 
-    public void updateStatus(String ipAddr, String switchStatus){
+        ContentValues values=new ContentValues();
+        values.put("DEVICE_STATUS", status);
 
-        Log.d("SWITCH","Update Status");
+        int rowsUpdated = database.update(DEVICE_TABLE_NAME, values, " DEVICE_IP = \"" + ipAddress +"\"", null);
 
-//        database = databaseHelper.getWritableDatabase();
-//        if (switchStatus.equalsIgnoreCase("ON")) {
-//            switchStatus = "DEVICE_ON";
-//        } else if (switchStatus.equalsIgnoreCase("OFF")) {
-//            switchStatus = "DEVICE_OFF";
-//        }
-//
-//        ContentValues values=new ContentValues();
-//        values.put("DEVICE_STATUS", switchStatus);
-//        Log.d(ipAddr,switchStatus);
-//
-//        // String Update = " UPDATE " +WEMO_TABLE_NAME+ " set DEVICE_STATUS = "+switchStatus+ " where DEVICE_IP = "+ipAddr;
-////        database.execSQL(Update);
-//        int rowsUpdated = database.update(WEMO_TABLE_NAME, values, " DEVICE_IP = \"" + ipAddr +"\"", null);
-//        Log.d("UPDATED", " " + rowsUpdated);
-//        database.close();
+        Log.d("UPDATED", " " + rowsUpdated);
+        database.close();
 
     }
-
 
     public void setAlarmForDevice(String alarmSetTime,String deviceName,String deviceIP, String switchStatus){
         Log.d("DATABASE",deviceName+" "+deviceIP);
@@ -552,23 +637,50 @@ public class DatabaseSqlHelper {
 
     }
 
-    private class InsertUserTask extends AsyncTask<Void, Void, Void> {
+    private class InsertUserTask extends AsyncTask<Void, Void, Boolean> {
 
-        protected Void doInBackground(Void... voids) {
+        @Override
+        protected Boolean doInBackground(Void... voids) {
 
-            DynamoDbHelper.insertUsers(userInfo);
+            return DynamoDbHelper.insertUsers(userInfo);
 
-            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result) {
+                Toast.makeText(context, "Successfully created user.",
+                        Toast.LENGTH_LONG).show();
+            } else {
+                deleteUserData(userInfo);
+                Toast.makeText(context, "Cannot add user at this time. Please try again later.",
+                        Toast.LENGTH_LONG).show();
+            }
         }
     }
 
-    private class InsertUserDeviceDetails extends AsyncTask<Void, Void, Void> {
+    private class InsertUserDeviceDetails extends AsyncTask<Void, Void, Boolean> {
 
-        protected Void doInBackground(Void... voids) {
+        @Override
+        protected Boolean doInBackground(Void... voids) {
 
-            DynamoDbHelper.insertUserDeviceInfo(userInfo, deviceInfo);
+            boolean result = DynamoDbHelper.insertUserDeviceInfo(userInfo, deviceInfo);
 
-            return null;
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result) {
+                Toast.makeText(context, "Successfully created device.",
+                        Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(context, LightsActivity.class);
+                context.startActivity(intent);
+            } else {
+                deleteSmartDeviceData(deviceInfo);
+                Toast.makeText(context, "Cannot add a device at this time. Please try again later.",
+                        Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

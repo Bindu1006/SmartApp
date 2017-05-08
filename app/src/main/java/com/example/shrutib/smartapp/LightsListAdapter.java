@@ -196,7 +196,7 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        final String ipString = getItem(position).ipAddress;
+        final String ipString = getItem(position).getDeviceIpAddress() ;
         final String deviceName = getItem(position).getDeviceName();
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.devices_list_layout, parent, false);
@@ -276,15 +276,26 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
                 if (status.equalsIgnoreCase("OFF")) {
                     Drawable id = getContext().getResources().getDrawable(R.drawable.switch_on);
                     imageView.setImageDrawable(id);
+                    databaseHelper.updateDeviceStatus(ipString, "ON");
                 } else {
                     Drawable id = getContext().getResources().getDrawable(R.drawable.switch_off);
                     imageView.setImageDrawable(id);
+                    databaseHelper.updateDeviceStatus(ipString, "OFF");
                 }
 
                 Toast.makeText(getContext(), "Data Published", Toast.LENGTH_LONG).show();
             }
 
         });
+
+        final ImageView alarmImageView = (ImageView) convertView.findViewById(R.id.alarm_device);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
 
         // Return the completed view to render on screen
         return convertView;

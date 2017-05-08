@@ -32,6 +32,7 @@ import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
 import com.example.shrutib.smartapp.BeanObjects.UserBean;
 import com.example.shrutib.smartapp.LightsActivity;
 import com.example.shrutib.smartapp.R;
+import com.example.shrutib.smartapp.Utils.AmazonClientManager;
 import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 
 import java.io.File;
@@ -45,6 +46,7 @@ public class ConfigureSmartDevice extends AppCompatActivity implements Navigatio
     public final static String APP_PATH_SD_CARD = "/smart_home/";
     public final static String APP_THUMBNAIL_PATH_SD_CARD = "augmented_images";
     private String DEVICE_NAME;
+    public static AmazonClientManager clientManager = null;
 
 
     @Override
@@ -54,6 +56,8 @@ public class ConfigureSmartDevice extends AppCompatActivity implements Navigatio
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        clientManager = new AmazonClientManager(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -154,14 +158,19 @@ public class ConfigureSmartDevice extends AppCompatActivity implements Navigatio
                     deviceBean.setVendor(vendorInfo);
                     deviceBean.setDeviceName(deviceName);
 
-                    String status = databaseHelper.getDeviceStatus(ipAddress);
-                    if (status.equalsIgnoreCase("OFF")) {
-                        deviceBean.setDeviceStatus("ON");
-                    } else {
-                        deviceBean.setDeviceStatus("OFF");
-                    }
+                    deviceBean.setDeviceStatus("OFF");
+
+//                    String status = databaseHelper.getDeviceStatus(ipAddress);
+//                    if (status.equalsIgnoreCase("OFF")) {
+//                        deviceBean.setDeviceStatus("ON");
+//                    } else {
+//                        deviceBean.setDeviceStatus("OFF");
+//                    }
 
                     databaseHelper.insertSmartDeviceData(deviceBean);
+
+
+
                 }
 
             }

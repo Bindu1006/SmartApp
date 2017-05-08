@@ -138,4 +138,14 @@ public class DeviceBean implements Parcelable {
             return new DeviceBean[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "DeviceBean{" +
+                "deviceStatus='" + deviceStatus + '\'' +
+                ", deviceIpAddress='" + deviceIpAddress + '\'' +
+                ", vendor='" + vendor + '\'' +
+                ", deviceName='" + deviceName + '\'' +
+                '}';
+    }
 }

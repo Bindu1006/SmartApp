@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AugmentedMainActivity extends ListActivity {
+public class AugmentedMainActivity extends AppCompatActivity  {
     private Map<Integer, List<SampleMeta>> samples;
 
     private Set<String> irSamples;
@@ -54,25 +54,50 @@ public class AugmentedMainActivity extends ListActivity {
         final String[] values = this.getListLabels();
 
         // use default list-ArrayAdapter */
-        this.setListAdapter( new ArrayAdapter<String>( this, android.R.layout.simple_list_item_1, android.R.id.text1, values ) );
-//
-//        final int abTitleId = getResources().getIdentifier("action_bar_title", "id", "android");
-//        findViewById(abTitleId).setOnLongClickListener(new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View v) {
-//                SDKBuildInformation sdkBuildInformation = ArchitectView.getSDKBuildInformation();
-//                new AlertDialog.Builder(AugmentedMainActivity.this)
-//                        .setTitle("Build information")
-//                        .setMessage(
-//                                "Build configuration: " + sdkBuildInformation.getBuildConfiguration() + "\n" +
-//                                        "Build date: " + sdkBuildInformation.getBuildDate() + "\n" +
-//                                        "Build number: " + sdkBuildInformation.getBuildNumber() + "\n" +
-//                                        "Build version: " + ArchitectView.getSDKVersion()
-//                        )
-//                        .show();
-//                return false;
-//            }
-//        });
+//        this.setListAdapter( new ArrayAdapter<String>( this, android.R.layout.simple_list_item_1, android.R.id.text1, values ) );
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        final Intent intent = new Intent( this, MainSamplesListActivity.class );
+        final List<SampleMeta> activitiesToLaunch = getActivitiesToLaunch();
+
+        String[] activityUrls = new String[activitiesToLaunch.size()];
+        String[] activityTitles = new String[activitiesToLaunch.size()];
+        String[] activityClasses = new String[activitiesToLaunch.size()];
+        boolean[] activitiesIr = new boolean[activitiesToLaunch.size()];
+        boolean[] activitiesGeo = new boolean[activitiesToLaunch.size()];
+        boolean[] activitiesInstant = new boolean[activitiesToLaunch.size()];
+        final String activityTitle = activitiesToLaunch.get(0).categoryName.replace("$", " ");
+
+//         check if AR.VideoDrawables are supported on the current device. if not -> show hint-Toast message
+        if (activitiesToLaunch.get(0).categoryName.contains("Video") && ! AugmentedMainActivity.isVideoDrawablesSupported()) {
+            Toast.makeText(this, R.string.videosrawables_fallback, Toast.LENGTH_LONG).show();
+        }
+
+        final SampleMeta meta = activitiesToLaunch.get(0);
+        activityTitles[0] = (meta.sampleName.replace("$", " "));
+        activityUrls[0] = meta.path;
+        activitiesIr[0] = meta.hasIr;
+        activitiesGeo[0] = meta.hasGeo;
+        activitiesInstant[0] = meta.hasInstant;
+        activityClasses[0] = ("com.example.shrutib.smartapp.AugmentedReality.AutoHdSampleCamActivity");
+
+
+        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_ARCHITECT_WORLD_URLS_ARRAY, activityUrls);
+        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_CLASSNAMES_ARRAY, activityClasses);
+        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_TILES_ARRAY, activityTitles);
+        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_IR_ARRAY, activitiesIr);
+        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_GEO_ARRAY, activitiesGeo);
+        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_INSTANT_ARRAY, activitiesInstant);
+        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITY_TITLE_STRING, activityTitle);
+
+			/* launch activity */
+        this.startActivity( intent );
+
+
     }
 
     private Set<String> getListFrom(String fname) {
@@ -92,76 +117,79 @@ public class AugmentedMainActivity extends ListActivity {
         return data;
     }
 
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id ) {
-        super.onListItemClick( l, v, position, id );
-
-        final Intent intent = new Intent( this, MainSamplesListActivity.class );
-
-        final List<SampleMeta> activitiesToLaunch = getActivitiesToLaunch(position);
-        final String activityTitle = activitiesToLaunch.get(0).categoryName.replace("$", " ");
-        String[] activityTitles = new String[activitiesToLaunch.size()];
-        String[] activityUrls = new String[activitiesToLaunch.size()];
-        String[] activityClasses = new String[activitiesToLaunch.size()];
-
-        boolean[] activitiesIr = new boolean[activitiesToLaunch.size()];
-        boolean[] activitiesGeo = new boolean[activitiesToLaunch.size()];
-        boolean[] activitiesInstant = new boolean[activitiesToLaunch.size()];
-
-        // check if AR.VideoDrawables are supported on the current device. if not -> show hint-Toast message
-        if (activitiesToLaunch.get(0).categoryName.contains("Video") && ! AugmentedMainActivity.isVideoDrawablesSupported()) {
-            Toast.makeText(this, R.string.videosrawables_fallback, Toast.LENGTH_LONG).show();
-        }
-
-        // find out which Activity to launch when sample row was pressed, some handle AR.platform.sendJSONObject, others inject poi data from native via javascript
-        for (int i= 0; i< activitiesToLaunch.size(); i++) {
-            final SampleMeta meta = activitiesToLaunch.get(i);
-
-            activityTitles[i] = (meta.sampleName.replace("$", " "));
-            activityUrls[i] = meta.path;
-            activitiesIr[i] = meta.hasIr;
-            activitiesGeo[i] = meta.hasGeo;
-            activitiesInstant[i] = meta.hasInstant;
-
-            if (meta.categoryId.equals("02") && meta.sampleId==3) {
-                activityClasses[i] = ("com.wikitude.samples.SampleCamActivity");
-            } else if (meta.categoryId.equals("03")) {
-                activityClasses[i] = ("com.wikitude.samples.SampleCamActivity");
-            } else if (meta.categoryId.equals("04")){
-                activityClasses[i] = ("com.wikitude.samples.SampleCamActivity");
-            } else if (meta.categoryId.equals("07") && meta.sampleId==1) {
-                activityClasses[i] = ("com.wikitude.samples.SampleCamContentFromNativeActivity");
-            } else if (meta.categoryId.equals("10") && meta.sampleId==1) {
-                activityClasses[i] = ("com.wikitude.samples.SampleFrontCamActivity");
-            } else if (meta.categoryId.equals("10") && meta.sampleId==3) {
-                activityClasses[i] = ("com.example.shrutibsmartapp.AugmentedReality.SampleCam2Activity");
-            } else if (meta.categoryId.equals("11") && meta.sampleId==1) {
-                activityClasses[i] = ("com.wikitude.samples.SamplePluginActivity");
-            } else if (meta.categoryId.equals("11") && meta.sampleId==2) {
-                activityClasses[i] = ("com.wikitude.samples.FaceDetectionPluginActivity");
-            } else if (meta.categoryId.equals("11") && meta.sampleId==3) {
-                activityClasses[i] = ("com.wikitude.samples.SimpleInputPluginActivity");
-            } else if (meta.categoryId.equals("11") && meta.sampleId==4) {
-                activityClasses[i] = ("com.wikitude.samples.CustomCameraActivity");
-            } else if (meta.categoryId.equals("11") && meta.sampleId==5) {
-                activityClasses[i] = ("com.wikitude.samples.MarkerTrackingPluginActivity");
-            } else {
-                activityClasses[i] = ("com.example.shrutib.smartapp.AugmentedReality.AutoHdSampleCamActivity");
-            }
-        }
-
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_ARCHITECT_WORLD_URLS_ARRAY, activityUrls);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_CLASSNAMES_ARRAY, activityClasses);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_TILES_ARRAY, activityTitles);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_IR_ARRAY, activitiesIr);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_GEO_ARRAY, activitiesGeo);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_INSTANT_ARRAY, activitiesInstant);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITY_TITLE_STRING, activityTitle);
-
-			/* launch activity */
-        this.startActivity( intent );
-
-    }
+//    @Override
+//    protected void onListItemClick(ListView l, View v, int position, long id ) {
+//        super.onListItemClick( l, v, position, id );
+//
+//        final Intent intent = new Intent( this, MainSamplesListActivity.class );
+//
+//        final List<SampleMeta> activitiesToLaunch = getActivitiesToLaunch();
+//        for (SampleMeta s : activitiesToLaunch) {
+//            Log.d("SHRUTI", s.toString());
+//        }
+//        final String activityTitle = activitiesToLaunch.get(0).categoryName.replace("$", " ");
+//        String[] activityTitles = new String[activitiesToLaunch.size()];
+//        String[] activityUrls = new String[activitiesToLaunch.size()];
+//        String[] activityClasses = new String[activitiesToLaunch.size()];
+//
+//        boolean[] activitiesIr = new boolean[activitiesToLaunch.size()];
+//        boolean[] activitiesGeo = new boolean[activitiesToLaunch.size()];
+//        boolean[] activitiesInstant = new boolean[activitiesToLaunch.size()];
+//
+//        // check if AR.VideoDrawables are supported on the current device. if not -> show hint-Toast message
+//        if (activitiesToLaunch.get(0).categoryName.contains("Video") && ! AugmentedMainActivity.isVideoDrawablesSupported()) {
+//            Toast.makeText(this, R.string.videosrawables_fallback, Toast.LENGTH_LONG).show();
+//        }
+//
+//        // find out which Activity to launch when sample row was pressed, some handle AR.platform.sendJSONObject, others inject poi data from native via javascript
+//        for (int i= 0; i< activitiesToLaunch.size(); i++) {
+//            final SampleMeta meta = activitiesToLaunch.get(i);
+//
+//            activityTitles[i] = (meta.sampleName.replace("$", " "));
+//            activityUrls[i] = meta.path;
+//            activitiesIr[i] = meta.hasIr;
+//            activitiesGeo[i] = meta.hasGeo;
+//            activitiesInstant[i] = meta.hasInstant;
+//
+//            if (meta.categoryId.equals("02") && meta.sampleId==3) {
+//                activityClasses[i] = ("com.wikitude.samples.SampleCamActivity");
+//            } else if (meta.categoryId.equals("03")) {
+//                activityClasses[i] = ("com.wikitude.samples.SampleCamActivity");
+//            } else if (meta.categoryId.equals("04")){
+//                activityClasses[i] = ("com.wikitude.samples.SampleCamActivity");
+//            } else if (meta.categoryId.equals("07") && meta.sampleId==1) {
+//                activityClasses[i] = ("com.wikitude.samples.SampleCamContentFromNativeActivity");
+//            } else if (meta.categoryId.equals("10") && meta.sampleId==1) {
+//                activityClasses[i] = ("com.wikitude.samples.SampleFrontCamActivity");
+//            } else if (meta.categoryId.equals("10") && meta.sampleId==3) {
+//                activityClasses[i] = ("com.example.shrutibsmartapp.AugmentedReality.SampleCam2Activity");
+//            } else if (meta.categoryId.equals("11") && meta.sampleId==1) {
+//                activityClasses[i] = ("com.wikitude.samples.SamplePluginActivity");
+//            } else if (meta.categoryId.equals("11") && meta.sampleId==2) {
+//                activityClasses[i] = ("com.wikitude.samples.FaceDetectionPluginActivity");
+//            } else if (meta.categoryId.equals("11") && meta.sampleId==3) {
+//                activityClasses[i] = ("com.wikitude.samples.SimpleInputPluginActivity");
+//            } else if (meta.categoryId.equals("11") && meta.sampleId==4) {
+//                activityClasses[i] = ("com.wikitude.samples.CustomCameraActivity");
+//            } else if (meta.categoryId.equals("11") && meta.sampleId==5) {
+//                activityClasses[i] = ("com.wikitude.samples.MarkerTrackingPluginActivity");
+//            } else {
+//                activityClasses[i] = ("com.example.shrutib.smartapp.AugmentedReality.AutoHdSampleCamActivity");
+//            }
+//        }
+//
+//        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_ARCHITECT_WORLD_URLS_ARRAY, activityUrls);
+//        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_CLASSNAMES_ARRAY, activityClasses);
+//        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_TILES_ARRAY, activityTitles);
+//        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_IR_ARRAY, activitiesIr);
+//        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_GEO_ARRAY, activitiesGeo);
+//        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_INSTANT_ARRAY, activitiesInstant);
+//        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITY_TITLE_STRING, activityTitle);
+//
+//			/* launch activity */
+//        this.startActivity( intent );
+//
+//    }
 
     protected final String[] getListLabels() {
         boolean includeIR = (ArchitectView.getSupportedFeaturesForDevice(getApplicationContext()) & ArchitectStartupConfiguration.Features.ImageTracking) != 0;
@@ -198,8 +226,8 @@ public class AugmentedMainActivity extends ListActivity {
         }
     }
 
-    private List<SampleMeta> getActivitiesToLaunch(final int position){
-        return samples.get(position);
+    private List<SampleMeta> getActivitiesToLaunch(){
+        return samples.get(0);
     }
 
     private Map<Integer, List<SampleMeta>> getActivitiesToLaunch(boolean includeIR, boolean includeGeo, boolean includeInstant){
@@ -245,6 +273,7 @@ public class AugmentedMainActivity extends ListActivity {
 
     private static class SampleMeta {
 
+
         final String path, categoryName, sampleName, categoryId;
         final int sampleId;
         final boolean hasGeo, hasIr, hasInstant;
@@ -258,13 +287,18 @@ public class AugmentedMainActivity extends ListActivity {
             if (path.indexOf("_")<0) {
                 throw new IllegalArgumentException("all files in asset folder must be folders and define category and subcategory as predefined (with underscore)");
             }
-            this.categoryId = path.substring(0, path.indexOf("_"));
-            path = path.substring(path.indexOf("_")+1);
-            this.categoryName = path.substring(0, path.indexOf("_"));
-            path = path.substring(path.indexOf("_")+1);
-            this.sampleId = Integer.parseInt(path.substring(0, path.indexOf("_")));
-            path = path.substring(path.indexOf("_")+1);
-            this.sampleName = path;
+//            this.categoryId = path.substring(0, path.indexOf("_"));
+//            path = path.substring(path.indexOf("_")+1);
+//            this.categoryName = path.substring(0, path.indexOf("_"));
+//            path = path.substring(path.indexOf("_")+1);
+//            this.sampleId = Integer.parseInt(path.substring(0, path.indexOf("_")));
+//            path = path.substring(path.indexOf("_")+1);
+//            this.sampleName = path;
+
+            this.categoryId = "01";
+            this.categoryName = "Image$Recognition";
+            this.sampleId = 1;
+            this.sampleName = "01_Image$Recognition_1_Image$On$Target";
         }
 
         @Override

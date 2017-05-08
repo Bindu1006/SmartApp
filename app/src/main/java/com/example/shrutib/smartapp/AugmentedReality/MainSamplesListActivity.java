@@ -50,18 +50,18 @@ public class MainSamplesListActivity extends ListActivity {
 		final String[] values = this.getListLabels();
 
 		/* use default list-ArrayAdapter */
-		this.setListAdapter(new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, android.R.id.text1, values));
+//		this.setListAdapter(new ArrayAdapter<String>(this,
+//				android.R.layout.simple_list_item_1, android.R.id.text1, values));
 
 		mPermissionManager = ArchitectView.getPermissionManager();
 	}
 
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
+	protected void onStart() {
+		super.onStart();
 
 		/* get className of activity to call when clicking item at position x */
-		_lastSelectedListItemPosition = position;
+		_lastSelectedListItemPosition = 0;
 
 		String[] permissions = getActivitiesGeo()[_lastSelectedListItemPosition] ?
 				new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION} :
@@ -96,6 +96,49 @@ public class MainSamplesListActivity extends ListActivity {
 				alert.show();
 			}
 		});
+
+	}
+
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+
+//		/* get className of activity to call when clicking item at position x */
+//		_lastSelectedListItemPosition = position;
+//
+//		String[] permissions = getActivitiesGeo()[_lastSelectedListItemPosition] ?
+//				new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION} :
+//				new String[]{Manifest.permission.CAMERA};
+//
+//		mPermissionManager.checkPermissions(this, permissions, PermissionManager.WIKITUDE_PERMISSION_REQUEST, new PermissionManager.PermissionManagerCallback() {
+//			@Override
+//			public void permissionsGranted(int requestCode) {
+//				loadExample();
+//			}
+//
+//			@Override
+//			public void permissionsDenied(String[] deniedPermissions) {
+//
+//				Toast.makeText(MainSamplesListActivity.this, "The Wikitude SDK needs the following permissions to enable an AR experience: " + Arrays.toString(deniedPermissions), Toast.LENGTH_SHORT).show();
+//			}
+//
+//			@Override
+//			public void showPermissionRationale(final int requestCode, final String[] permissions) {
+//				AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainSamplesListActivity.this);
+//				alertBuilder.setCancelable(true);
+//				alertBuilder.setTitle("Wikitude Permissions");
+//				alertBuilder.setMessage("The Wikitude SDK needs the following permissions to enable an AR experience: " + Arrays.toString(permissions));
+//				alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+//					@Override
+//					public void onClick(DialogInterface dialog, int which) {
+//						mPermissionManager.positiveRationaleResult(requestCode, permissions);
+//					}
+//				});
+//
+//				AlertDialog alert = alertBuilder.create();
+//				alert.show();
+//			}
+//		});
 	}
 
 	@Override

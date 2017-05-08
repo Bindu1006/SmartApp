@@ -75,7 +75,7 @@ public abstract class AbstractDiscovery extends AsyncTask<Void, DeviceBean, Void
                                 name = c.getString(0);
                                 Log.d("Shruti NAME Discover: ", c.getString(0));
 
-                                if (name.toLowerCase().contains("belkin") || name.toLowerCase().contains("philips")) {
+                                if (name.toLowerCase().contains("xerox") || name.toLowerCase().contains("philips")) {
                                     discover.addHost(host[0], name);
                                 }
                             }

@@ -12,12 +12,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.example.shrutib.smartapp.AugmentedReality.AugmentedMainActivity;
 import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 
 public class LoginActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -58,11 +60,21 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
         //Delete Database
 //        DatabaseSqlHelper db = new DatabaseSqlHelper(getApplicationContext());
 //        db.deleteDatabase();
+        final DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+
+        Button signUpButton = (Button) findViewById(R.id.sign_up);
+
+        int userCount = databaseHelper.getUserCount();
+        if (userCount > 0) {
+            signUpButton.setVisibility(View.GONE);
+        } else {
+            signUpButton.setVisibility(View.VISIBLE);
+        }
+
 
         Button loginButton = (Button) findViewById(R.id.login);
         loginButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
                 AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
 
                 EditText userNameText = (EditText) findViewById(R.id.loginUsername);
@@ -84,7 +96,12 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
                     alertDialog.show();
 
                 } else {
-                    Intent intent = new Intent(getBaseContext(), MainActivity.class);
+                    Log.d("SHRUTI", "User exists : " + databaseHelper.getUserDetails());
+//                    Intent intent = new Intent(getBaseContext(), MainActivity.class);
+//                    startActivity(intent);
+
+                    //test
+                    Intent intent = new Intent(getBaseContext(), AugmentedMainActivity.class);
                     startActivity(intent);
                 }
 
@@ -109,7 +126,6 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
             }
         });
 
-        Button signUpButton = (Button) findViewById(R.id.sign_up);
         signUpButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(getBaseContext(), RegisterActivity.class);

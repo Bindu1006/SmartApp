@@ -1,12 +1,15 @@
 package com.example.shrutib.smartapp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -32,6 +35,7 @@ import com.amazonaws.services.iot.AWSIotClient;
 import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
+import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
 import com.example.shrutib.smartapp.BeanObjects.UserBean;
 import com.example.shrutib.smartapp.Utils.AmazonClientManager;
 import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
@@ -63,6 +67,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
 
     private PlaceAutocompleteAdapter mAdapter;
 
+    private UserBean userData;
 
     // IoT endpoint
     // AWS Iot CLI describe-endpoint call returns: XXXXXXXXXX.iot.<region>.amazonaws.com
@@ -114,7 +119,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
         // events. If your activity does not extend FragmentActivity, make sure to call connect()
         // and disconnect() explicitly.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, 0 /* clientId */, this)
+                .enableAutoManage(this, 0, this)
                 .addApi(Places.GEO_DATA_API)
                 .build();
 
@@ -131,7 +136,8 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
                 null);
         mAutocompleteView.setAdapter(mAdapter);
 
-        initializeAmazonPubSub();
+        InitializeAmazonPubSubTask task = new InitializeAmazonPubSubTask();
+        task.execute();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -157,11 +163,10 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
     protected void onStart() {
         super.onStart();
 
-        connectToAWSPubSub();
+//        connectToAWSPubSub();
         Button register = (Button) findViewById(R.id.register);
         register.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-
                 doRegisterUser();
 
             }
@@ -181,24 +186,36 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
         userDetails.setPhoneNumber(phoneEditText.getText().toString());
 
         DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
-        databaseHelper.registerUser(userDetails);
+        boolean result = databaseHelper.registerUser(userDetails);
 
-        //Publish Users to Raspberry Pi
-        final String topic = "$aws/things/RaspberryPi/shadow/update/test";
+        if (result) {
 
-        try {
+            userData = userDetails;
 
-            JSONObject msg = new JSONObject();
-            msg.put("username", userDetails.getUserName());
-            msg.put("password", userDetails.getPassword());
+            //Publish Users to Raspberry Pi
+            final String topic = "$aws/things/RaspberryPi/shadow/update/test";
 
-            mqttManager.publishString(msg.toString(), topic, AWSIotMqttQos.QOS0);
-        } catch (Exception e) {
-            Log.e(TAG, "Publish error.", e);
+
+            ConnectAmazonPubSubTask connectTask = new ConnectAmazonPubSubTask();
+            connectTask.execute();
+
+            Intent intent = new Intent(getBaseContext(), MainActivity.class);
+            startActivity(intent);
+
+        } else {
+            AlertDialog alertDialog = new AlertDialog.Builder(RegistrationDetailsActivity.this).create();
+            alertDialog.setTitle("Error");
+            alertDialog.setMessage("Unable to add users at this moment. Please try again later.");
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            alertDialog.show();
         }
 
-        Intent intent = new Intent(getBaseContext(), MainActivity.class);
-        startActivity(intent);
+
 
     }
 
@@ -339,165 +356,188 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
         }
     };
 
-    public void initializeAmazonPubSub() {
+    public class InitializeAmazonPubSubTask extends AsyncTask<Void, Void, Void> {
 
-        Log.e(TAG, "Connect Pub Sub AWS");
-        clientId = UUID.randomUUID().toString();
+        @Override
+        protected Void doInBackground(Void... params) {
 
-        credentialsProvider = new CognitoCachingCredentialsProvider(
-                getApplicationContext(), // context
-                COGNITO_POOL_ID, // Identity Pool ID
-                MY_REGION // Region
-        );
-        Region region = Region.getRegion(MY_REGION);
+            Log.e(TAG, "Initialize Pub Sub AWS");
+            clientId = UUID.randomUUID().toString();
 
-        // MQTT Client
-        mqttManager = new AWSIotMqttManager(clientId, CUSTOMER_SPECIFIC_ENDPOINT);
+            credentialsProvider = new CognitoCachingCredentialsProvider(
+                    getApplicationContext(), // context
+                    COGNITO_POOL_ID, // Identity Pool ID
+                    MY_REGION // Region
+            );
+            Region region = Region.getRegion(MY_REGION);
 
-        // Set keepalive to 10 seconds.  Will recognize disconnects more quickly but will also send
-        // MQTT pings every 10 seconds.
-        mqttManager.setKeepAlive(10);
+            // MQTT Client
+            mqttManager = new AWSIotMqttManager(clientId, CUSTOMER_SPECIFIC_ENDPOINT);
 
-        // Set Last Will and Testament for MQTT.  On an unclean disconnect (loss of connection)
-        // AWS IoT will publish this message to alert other clients.
-        AWSIotMqttLastWillAndTestament lwt = new AWSIotMqttLastWillAndTestament("my/lwt/topic",
-                "Android client lost connection", AWSIotMqttQos.QOS0);
-        mqttManager.setMqttLastWillAndTestament(lwt);
+            // Set keepalive to 10 seconds.  Will recognize disconnects more quickly but will also send
+            // MQTT pings every 10 seconds.
+            mqttManager.setKeepAlive(10);
 
-        // IoT Client (for creation of certificate if needed)
-        mIotAndroidClient = new AWSIotClient(credentialsProvider);
-        mIotAndroidClient.setRegion(region);
-        mIotAndroidClient.setEndpoint("iot.us-west-2.amazonaws.com");
+            // Set Last Will and Testament for MQTT.  On an unclean disconnect (loss of connection)
+            // AWS IoT will publish this message to alert other clients.
+            AWSIotMqttLastWillAndTestament lwt = new AWSIotMqttLastWillAndTestament("my/lwt/topic",
+                    "Android client lost connection", AWSIotMqttQos.QOS0);
+            mqttManager.setMqttLastWillAndTestament(lwt);
 
-        keystorePath = getApplicationContext().getFilesDir().getPath();
-        keystoreName = KEYSTORE_NAME;
-        keystorePassword = KEYSTORE_PASSWORD;
-        certificateId = CERTIFICATE_ID;
+            // IoT Client (for creation of certificate if needed)
+            mIotAndroidClient = new AWSIotClient(credentialsProvider);
+            mIotAndroidClient.setRegion(region);
+            mIotAndroidClient.setEndpoint("iot.us-west-2.amazonaws.com");
 
-        // To load cert/key from keystore on filesystem
-        try {
-            if (AWSIotKeystoreHelper.isKeystorePresent(keystorePath, keystoreName)) {
-                if (AWSIotKeystoreHelper.keystoreContainsAlias(certificateId, keystorePath,
-                        keystoreName, keystorePassword)) {
-                    Log.i(TAG, "Certificate " + certificateId
-                            + " found in keystore - using for MQTT.");
-                    // load keystore from file into memory to pass on connection
-                    clientKeyStore = AWSIotKeystoreHelper.getIotKeystore(certificateId,
-                            keystorePath, keystoreName, keystorePassword);
-                } else {
-                    Log.i(TAG, "Key/cert " + certificateId + " not found in keystore.");
-                }
-            } else {
-                Log.i(TAG, "Keystore " + keystorePath + "/" + keystoreName + " not found.");
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "An error occurred retrieving cert/key from keystore.", e);
-        }
+            keystorePath = getApplicationContext().getFilesDir().getPath();
+            keystoreName = KEYSTORE_NAME;
+            keystorePassword = KEYSTORE_PASSWORD;
+            certificateId = CERTIFICATE_ID;
 
-        if (clientKeyStore == null) {
-            Log.i(TAG, "Cert/key was not found in keystore - creating new key and certificate.");
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        // Create a new private key and certificate. This call
-                        // creates both on the server and returns them to the
-                        // device.
-                        CreateKeysAndCertificateRequest createKeysAndCertificateRequest =
-                                new CreateKeysAndCertificateRequest();
-                        createKeysAndCertificateRequest.setSetAsActive(true);
-                        final CreateKeysAndCertificateResult createKeysAndCertificateResult;
-                        createKeysAndCertificateResult =
-                                mIotAndroidClient.createKeysAndCertificate(createKeysAndCertificateRequest);
-                        Log.i(TAG,
-                                "Cert ID: " +
-                                        createKeysAndCertificateResult.getCertificateId() +
-                                        " created.");
-
-                        // store in keystore for use in MQTT client
-                        // saved as alias "default" so a new certificate isn't
-                        // generated each run of this application
-                        AWSIotKeystoreHelper.saveCertificateAndPrivateKey(certificateId,
-                                createKeysAndCertificateResult.getCertificatePem(),
-                                createKeysAndCertificateResult.getKeyPair().getPrivateKey(),
-                                keystorePath, keystoreName, keystorePassword);
-
-                        // load keystore from file into memory to pass on
-                        // connection
+            // To load cert/key from keystore on filesystem
+            try {
+                if (AWSIotKeystoreHelper.isKeystorePresent(keystorePath, keystoreName)) {
+                    if (AWSIotKeystoreHelper.keystoreContainsAlias(certificateId, keystorePath,
+                            keystoreName, keystorePassword)) {
+                        Log.i(TAG, "Certificate " + certificateId
+                                + " found in keystore - using for MQTT.");
+                        // load keystore from file into memory to pass on connection
                         clientKeyStore = AWSIotKeystoreHelper.getIotKeystore(certificateId,
                                 keystorePath, keystoreName, keystorePassword);
-
-                        // Attach a policy to the newly created certificate.
-                        // This flow assumes the policy was already created in
-                        // AWS IoT and we are now just attaching it to the
-                        // certificate.
-                        AttachPrincipalPolicyRequest policyAttachRequest =
-                                new AttachPrincipalPolicyRequest();
-                        policyAttachRequest.setPolicyName(AWS_IOT_POLICY_NAME);
-                        policyAttachRequest.setPrincipal(createKeysAndCertificateResult
-                                .getCertificateArn());
-                        mIotAndroidClient.attachPrincipalPolicy(policyAttachRequest);
-
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Log.e(TAG, "set enabled is true");
-                            }
-                        });
-                    } catch (Exception e) {
-                        Log.e(TAG,
-                                "Exception occurred when generating new private key and certificate.",
-                                e);
-                        e.printStackTrace();
+                    } else {
+                        Log.i(TAG, "Key/cert " + certificateId + " not found in keystore.");
                     }
+                } else {
+                    Log.i(TAG, "Keystore " + keystorePath + "/" + keystoreName + " not found.");
                 }
-            }).start();
+            } catch (Exception e) {
+                Log.e(TAG, "An error occurred retrieving cert/key from keystore.", e);
+            }
+
+            if (clientKeyStore == null) {
+                Log.i(TAG, "Cert/key was not found in keystore - creating new key and certificate.");
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Create a new private key and certificate. This call
+                            // creates both on the server and returns them to the
+                            // device.
+                            CreateKeysAndCertificateRequest createKeysAndCertificateRequest =
+                                    new CreateKeysAndCertificateRequest();
+                            createKeysAndCertificateRequest.setSetAsActive(true);
+                            final CreateKeysAndCertificateResult createKeysAndCertificateResult;
+                            createKeysAndCertificateResult =
+                                    mIotAndroidClient.createKeysAndCertificate(createKeysAndCertificateRequest);
+                            Log.i(TAG,
+                                    "Cert ID: " +
+                                            createKeysAndCertificateResult.getCertificateId() +
+                                            " created.");
+
+                            // store in keystore for use in MQTT client
+                            // saved as alias "default" so a new certificate isn't
+                            // generated each run of this application
+                            AWSIotKeystoreHelper.saveCertificateAndPrivateKey(certificateId,
+                                    createKeysAndCertificateResult.getCertificatePem(),
+                                    createKeysAndCertificateResult.getKeyPair().getPrivateKey(),
+                                    keystorePath, keystoreName, keystorePassword);
+
+                            // load keystore from file into memory to pass on
+                            // connection
+                            clientKeyStore = AWSIotKeystoreHelper.getIotKeystore(certificateId,
+                                    keystorePath, keystoreName, keystorePassword);
+
+                            // Attach a policy to the newly created certificate.
+                            // This flow assumes the policy was already created in
+                            // AWS IoT and we are now just attaching it to the
+                            // certificate.
+                            AttachPrincipalPolicyRequest policyAttachRequest =
+                                    new AttachPrincipalPolicyRequest();
+                            policyAttachRequest.setPolicyName(AWS_IOT_POLICY_NAME);
+                            policyAttachRequest.setPrincipal(createKeysAndCertificateResult
+                                    .getCertificateArn());
+                            mIotAndroidClient.attachPrincipalPolicy(policyAttachRequest);
+
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Log.e(TAG, "set enabled is true");
+                                }
+                            });
+                        } catch (Exception e) {
+                            Log.e(TAG,
+                                    "Exception occurred when generating new private key and certificate.",
+                                    e);
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+            return null;
         }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            // TODO Auto-generated method stub
+            super.onPostExecute(result);
+            Log.d("SHRUTI","AWS initialize done");
+
+            Toast.makeText(RegistrationDetailsActivity.this, "Done syncing", Toast.LENGTH_LONG).show();
+
     }
 
-    public void connectToAWSPubSub() {
+    }
 
-        //        Connect to Amazon IOS
-        try {
-            mqttManager.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
-                @Override
-                public void onStatusChanged(final AWSIotMqttClientStatus status,
-                                            final Throwable throwable) {
-                    Log.d(TAG, "Status = " + String.valueOf(status));
+    public class ConnectAmazonPubSubTask extends AsyncTask<Void, Void, Void> {
 
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (status == AWSIotMqttClientStatus.Connecting) {
-                                Log.e(TAG, "Connecting...");
+        private boolean connected = false;
 
-                            } else if (status == AWSIotMqttClientStatus.Connected) {
-                                Log.e(TAG, "Connected");
+        @Override
+        protected Void doInBackground(Void... params) {
 
-                            } else if (status == AWSIotMqttClientStatus.Reconnecting) {
-                                if (throwable != null) {
-                                    Log.e(TAG, "Connection error.", throwable);
-                                }
-                                Log.e(TAG, "Reconnecting");
-                            } else if (status == AWSIotMqttClientStatus.ConnectionLost) {
-                                if (throwable != null) {
-                                    Log.e(TAG, "Connection error.", throwable);
-                                }
-                                Log.e(TAG, "Disconnected");
-                            } else {
-                                Log.e(TAG, "Disconnected");
+            //        Connect to Amazon IOS
+            try {
+                mqttManager.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
+                    @Override
+                    public void onStatusChanged(final AWSIotMqttClientStatus status,
+                                                final Throwable throwable) {
+                        Log.d(TAG, "Status = " + String.valueOf(status));
 
+                        if (status == AWSIotMqttClientStatus.Connected) {
+                            Log.e(TAG, "Connected");
+                            connected = true;
+                            final String topic = "$aws/things/RaspberryPi/shadow/update/test";
+                            Log.d("SHRUTI","AWS CONNECT done");
+
+                            try {
+
+                                JSONObject msg = new JSONObject();
+                                msg.put("username", userData.getUserName());
+                                msg.put("password", userData.getPassword());
+
+                                mqttManager.publishString(msg.toString(), topic, AWSIotMqttQos.QOS0);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Publish error.", e);
                             }
                         }
-                    });
-                }
-            });
-        } catch (final Exception e) {
-            Log.e(TAG, "Connection error.", e);
-        }
-    }
 
+                    }
+                });
+            } catch (final Exception e) {
+                Log.e(TAG, "Connection error.", e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            // TODO Auto-generated method stub
+            super.onPostExecute(result);
+
+        }
+
+    }
 
 }
 
