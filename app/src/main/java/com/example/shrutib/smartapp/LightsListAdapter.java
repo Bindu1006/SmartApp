@@ -2,6 +2,7 @@ package com.example.shrutib.smartapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,7 +25,9 @@ import com.amazonaws.services.iot.AWSIotClient;
 import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
+import com.example.shrutib.smartapp.AugmentedReality.AugmentedMainActivity;
 import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
+import com.example.shrutib.smartapp.SmartDevice.DeviceAlarmActivity;
 import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 
 import org.json.JSONObject;
@@ -289,9 +292,13 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
         });
 
         final ImageView alarmImageView = (ImageView) convertView.findViewById(R.id.alarm_device);
-        imageView.setOnClickListener(new View.OnClickListener() {
+        alarmImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(getContext(), DeviceAlarmActivity.class);
+
+                intent.putExtra("DEVICE_IP_ADDRESS", ipString);
+                getContext().startActivity(intent);
 
             }
         });

@@ -7,6 +7,7 @@
 
     <!--Menu Items-->
     <string name="action_settings">Settings</string>
+    <string name="action_logout">Logout</string>
     <string name="action_add_device">Add Device</string>
 
 
@@ -21,6 +22,7 @@
     <string name="discover">Discover</string>
     <string name="wifi_unknown">Wifi state unknown</string>
     <string name="btn_discover_cancel">Cancel</string>
+    <string name="device_alarm_msg">Schedule to: </string>
 
 
     <!--Buttons-->
@@ -122,7 +124,6 @@
     <string name="preferences_error4">Error: Value is not a valid IP address !</string>
 
 
-
     <string name="videosrawables_fallback">VideoDrawables are rendered fullscreen on this device</string>
     <string name="main_title_urlLauncher">Launch World via url</string>
     <string name="location_fetching">Trying to find out where you are</string>
@@ -137,8 +138,7 @@
 
     <!--Place AutoComplete-->
     <string name="place_details">&lt;b&gt;%1$s&lt;/b&gt;&lt;br/&gt;&lt;i&gt;Place Id: %2$s&lt;/i&gt;&lt;br/&gt;Address: %3$s&lt;br/&gt;Phone: %4$s&lt;br/&gt;Website: %5$s</string>
-
-
+    <string name="title_activity_device_alarm">DeviceAlarmActivity</string>
 
 
 </resources>

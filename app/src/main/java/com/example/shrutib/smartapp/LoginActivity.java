@@ -33,14 +33,14 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -62,53 +62,56 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
 //        db.deleteDatabase();
         final DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
 
-        Button signUpButton = (Button) findViewById(R.id.sign_up);
-
-        int userCount = databaseHelper.getUserCount();
-        if (userCount > 0) {
-            signUpButton.setVisibility(View.GONE);
+        String loginStatus = databaseHelper.getLoginStatus();
+        if (loginStatus != null && !loginStatus.equalsIgnoreCase("FALSE")) {
+            Intent intent = new Intent(getBaseContext(), MainActivity.class);
+            startActivity(intent);
         } else {
-            signUpButton.setVisibility(View.VISIBLE);
-        }
+
+            Button signUpButton = (Button) findViewById(R.id.sign_up);
+
+            int userCount = databaseHelper.getUserCount();
+            if (userCount > 0) {
+                signUpButton.setVisibility(View.GONE);
+            } else {
+                signUpButton.setVisibility(View.VISIBLE);
+            }
 
 
-        Button loginButton = (Button) findViewById(R.id.login);
-        loginButton.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
+            Button loginButton = (Button) findViewById(R.id.login);
+            loginButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
+                    AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
 
-                EditText userNameText = (EditText) findViewById(R.id.loginUsername);
-                String userName = userNameText.getText().toString();
+                    EditText userNameText = (EditText) findViewById(R.id.loginUsername);
+                    String userName = userNameText.getText().toString();
 
-                EditText passwordText = (EditText) findViewById(R.id.password);
-                String password = passwordText.getText().toString();
+                    EditText passwordText = (EditText) findViewById(R.id.password);
+                    String password = passwordText.getText().toString();
 
-                if (userName.equals("")|| password.equals("")) {
+                    if (userName.equals("") || password.equals("")) {
 
-                    alertDialog.setTitle("Error");
-                    alertDialog.setMessage("Please provide a username and password");
-                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            });
-                    alertDialog.show();
+                        alertDialog.setTitle("Error");
+                        alertDialog.setMessage("Please provide a username and password");
+                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                        alertDialog.show();
 
-                } else {
-                    Log.d("SHRUTI", "User exists : " + databaseHelper.getUserDetails());
-//                    Intent intent = new Intent(getBaseContext(), MainActivity.class);
-//                    startActivity(intent);
-
-                    //test
-                    Intent intent = new Intent(getBaseContext(), AugmentedMainActivity.class);
-                    startActivity(intent);
-                }
+                    } else {
+                        Log.d("SHRUTI", "User exists : " + databaseHelper.getUserDetails());
+                        Intent intent = new Intent(getBaseContext(), MainActivity.class);
+                        startActivity(intent);
+                    }
 
 
 //                else if (databaseHelper.authenticateUser(userName, password)) {
 //                    Intent intent = new Intent(getBaseContext(), MainActivity.class);
 //                    startActivity(intent);
+//                databaseHelper.updateLoginStatus(userName, "TRUE");
 //                } else {
 //
 //                    alertDialog.setTitle("Login Failed");
@@ -123,15 +126,16 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
 //                }
 
 
-            }
-        });
+                }
+            });
 
-        signUpButton.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                Intent intent = new Intent(getBaseContext(), RegisterActivity.class);
-                startActivity(intent);
-            }
-        });
+            signUpButton.setOnClickListener(new Button.OnClickListener() {
+                public void onClick(View v) {
+                    Intent intent = new Intent(getBaseContext(), RegisterActivity.class);
+                    startActivity(intent);
+                }
+            });
+        }
     }
 
     @Override
@@ -148,6 +152,10 @@ public class LoginActivity extends AppCompatActivity implements NavigationView.O
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.login2, menu);
+
+        MenuItem item = menu.findItem(R.id.action_logout);
+        item.setVisible(false);
+
         return true;
     }
 

@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.shrutib.smartapp.AugmentedReality.AugmentedMainActivity;
+import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,15 +41,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -99,7 +91,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
         getMenuInflater().inflate(R.menu.login2, menu);
+
+        if (databaseHelper.getLoginStatus().equalsIgnoreCase("FALSE")) {
+            MenuItem item = menu.findItem(R.id.action_logout);
+            item.setVisible(false);
+        }
         return true;
     }
 

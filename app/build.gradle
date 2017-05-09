@@ -7,8 +7,8 @@ android {
     defaultConfig {
 //        com.spectrum.smartapp
         applicationId "com.example.shrutib.smartapp"
-        minSdkVersion 15
-        targetSdkVersion 19
+        minSdkVersion 21
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

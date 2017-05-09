@@ -32,6 +32,7 @@ import com.example.shrutib.smartapp.NetworkDiscovery.DefaultDiscovery;
 import com.example.shrutib.smartapp.NetworkDiscovery.NetInfo;
 import com.example.shrutib.smartapp.SmartDevice.ConfigureSmartDevice;
 import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
+import com.example.shrutib.smartapp.Utils.DatabaseSqlHelper;
 import com.example.shrutib.smartapp.Utils.Prefs;
 
 
@@ -65,15 +66,6 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -132,6 +124,12 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.login2, menu);
+
+        DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+        if (databaseHelper.getLoginStatus().equalsIgnoreCase("FALSE")) {
+            MenuItem item = menu.findItem(R.id.action_logout);
+            item.setVisible(false);
+        }
         return true;
     }
 

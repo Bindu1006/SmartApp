@@ -15,6 +15,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
+import com.example.shrutib.smartapp.BeanObjects.DeviceAlarmDetails;
 import com.example.shrutib.smartapp.BeanObjects.DeviceBean;
 import com.example.shrutib.smartapp.BeanObjects.UserBean;
 import com.example.shrutib.smartapp.LightsActivity;
@@ -32,11 +33,11 @@ public class DatabaseSqlHelper {
     public static final String USER_TABLE_NAME = "USER_DETAILS";
     public static final String USER_DEVICE_TABLE_NAME = "USER_DEVICE_DETAILS";
     public static final String DEVICE_TABLE_NAME = "DEVICE_DETAILS";
-    public static final String ALARM_TABLE_NAME = "ALARM_DETAILS";
+    public static final String DEVICE_ALARM_TABLE_NAME = "DEVICE_ALARM_DETAILS";
     public static final String KEYS_TABLE_NAME = "PUBNUB_KEYS_DETAILS";
     public static final String VIDEO_TABLE_NAME = "VIDEO_STATUS_DETAILS";
 
-    public static final String USER_CREATE_QUERY = "create table USER_DETAILS (USERNAME text PRIMARY KEY, PASSWORD text not null, PHONENUMBER text, EMAIL text not null, ADDRESS text);";
+    public static final String USER_CREATE_QUERY = "create table USER_DETAILS (USERNAME text PRIMARY KEY, PASSWORD text not null, PHONENUMBER text, EMAIL text not null, ADDRESS text, LOGIN_STATUS text);";
 
 //    public static final String VIDEO_CREATE_QUERY = "create table VIDEO_STATUS_DETAILS (VIDEO_ID text PRIMARY KEY, VIDEO_STATUS text not null, PHONE_NUMBER text, MESSAGE_SENT text);";
 //
@@ -44,7 +45,7 @@ public class DatabaseSqlHelper {
 
     public static final String DEVICE_CREATE_QUERY = "create table DEVICE_DETAILS (DEVICE_IP text PRIMARY KEY, DEVICE_NAME text not null,DEVICE_STATUS text not null, VENDOR_NAME text not null );";
 
-//    public static final String ALARM_CREATE_QUERY = "create table ALARM_DETAILS (_id text PRIMARY KEY, DEVICE_NAME text not null,DEVICE_IP text not null, DEVICE_STATUS text not null, ALARM_TIME text not null);";
+    public static final String DEVICE_ALARM_CREATE_QUERY = "create table DEVICE_ALARM_DETAILS (_id text PRIMARY KEY, DEVICE_NAME text not null,DEVICE_IP text not null, DEVICE_STATUS text not null, ALARM_TIME text not null, REPEAT_STATUS text);";
 
     public static final String DATABASE_NAME = "PIHOME.db";
     public static final int DATABASE_VERSION = 4;
@@ -68,7 +69,7 @@ public class DatabaseSqlHelper {
             try {
                 db.execSQL(USER_CREATE_QUERY);
                 db.execSQL(DEVICE_CREATE_QUERY);
-//                db.execSQL(ALARM_CREATE_QUERY);
+                db.execSQL(DEVICE_ALARM_CREATE_QUERY);
 //                db.execSQL(KEYS_CREATE_QUERY);
 //                db.execSQL(VIDEO_CREATE_QUERY);
             } catch (SQLiteException e) {
@@ -81,7 +82,7 @@ public class DatabaseSqlHelper {
             // TODO Auto-generated method stub
             db.execSQL(USER_CREATE_QUERY);
             db.execSQL(DEVICE_CREATE_QUERY);
-//            db.execSQL(ALARM_CREATE_QUERY);
+            db.execSQL(DEVICE_ALARM_CREATE_QUERY);
 //            db.execSQL(KEYS_CREATE_QUERY);
 //            db.execSQL(VIDEO_CREATE_QUERY);
             onCreate(db);
@@ -124,6 +125,7 @@ public class DatabaseSqlHelper {
         userValues.put("PHONENUMBER", userDetails.getPhoneNumber());
         userValues.put("EMAIL", userDetails.getEmail());
         userValues.put("ADDRESS", userDetails.getAddress());
+        userValues.put("LOGIN_STATUS", "TRUE");
 
         try{
             database.insert(USER_TABLE_NAME, null, userValues);
@@ -305,6 +307,40 @@ public class DatabaseSqlHelper {
         } finally {
             database.close();
         }
+    }
+
+    public String getLoginStatus(){
+
+        Log.d("Get Login Status : ", "Device Details");
+        database = databaseHelper.getWritableDatabase();
+        String selectQuery = "SELECT LOGIN_STATUS FROM " + USER_TABLE_NAME;
+
+        Cursor cursor      = database.rawQuery(selectQuery, null);
+        String status = null;
+        if (cursor.moveToFirst()) {
+            do {
+                status = cursor.getString(0);
+            } while (cursor.moveToNext());
+        }
+        Log.d("Login Status : ", "Status :" + status);
+        cursor.close();
+        database.close();
+        return status;
+
+    }
+
+    public void updateLoginStatus(String username, String status){
+
+        Log.d("Get Login Status : ", " username : "+ username);
+        database = databaseHelper.getWritableDatabase();
+
+        ContentValues values=new ContentValues();
+        values.put("LOGIN_STATUS", status);
+
+        int rowsUpdated = database.update(USER_TABLE_NAME, values, " username = \"" + username +"\"", null);
+
+        Log.d("UPDATED", " " + rowsUpdated);
+        database.close();
 
     }
 
@@ -372,6 +408,29 @@ public class DatabaseSqlHelper {
 
     }
 
+    public DeviceBean getDeviceDetails(String ipAddress){
+
+        Log.d("Get Device Details: ", ipAddress);
+        database = databaseHelper.getWritableDatabase();
+        String countQuery = "SELECT * FROM " + DEVICE_TABLE_NAME + " where DEVICE_IP  = \""+ ipAddress +"\"";
+
+        Cursor cursor      = database.rawQuery(countQuery, null);
+        DeviceBean deviceBean = new DeviceBean();
+        if (cursor.moveToFirst()) {
+            do {
+                deviceBean.setDeviceIpAddress(cursor.getString(0));
+                deviceBean.setDeviceName(cursor.getString(1));
+                deviceBean.setDeviceStatus(cursor.getString(2));
+                deviceBean.setVendor(cursor.getString(3));
+            } while (cursor.moveToNext());
+        }
+        Log.d("Device data : ", "Device :" + deviceBean);
+        cursor.close();
+        database.close();
+        return deviceBean;
+
+    }
+
     public void updateDeviceStatus(String ipAddress, String status){
 
         Log.d("Get Device Status : ", "Device Details");
@@ -387,7 +446,7 @@ public class DatabaseSqlHelper {
 
     }
 
-    public void setAlarmForDevice(String alarmSetTime,String deviceName,String deviceIP, String switchStatus){
+    public void setAlarmForDevice(String alarmSetTime,String deviceName,String deviceIP, String switchStatus, String repeatStatus){
         Log.d("DATABASE",deviceName+" "+deviceIP);
 
         database = databaseHelper.getWritableDatabase();
@@ -403,18 +462,18 @@ public class DatabaseSqlHelper {
         alarmDevice.put("DEVICE_STATUS",switchStatus);
         alarmDevice.put("ALARM_TIME",alarmSetTime);
 
-        database.insertOrThrow(ALARM_TABLE_NAME, null, alarmDevice);
+        database.insertOrThrow(DEVICE_ALARM_TABLE_NAME, null, alarmDevice);
         database.close();
     }
 
-//    public void deleteAlarmEntry(DeviceSchedulerBO schedulerDetails) {
-//        Log.d("Delete Alarm Entry", schedulerDetails + " ");
-//
-//        database = databaseHelper.getWritableDatabase();
-//        database.delete(ALARM_TABLE_NAME, " DEVICE_IP = \"" + schedulerDetails.getDeviceIP() + "\" and ALARM_TIME = \"" + schedulerDetails.getAlarmTime() + "\"", null);
-//        database.close();
-//
-//    }
+    public void deleteAlarmEntry(DeviceAlarmDetails schedulerDetails) {
+        Log.d("Delete Alarm Entry", schedulerDetails + " ");
+
+        database = databaseHelper.getWritableDatabase();
+        database.delete(DEVICE_ALARM_TABLE_NAME, " DEVICE_IP = \"" + schedulerDetails.getDeviceIP() + "\" and ALARM_TIME = \"" + schedulerDetails.getAlarmTime() + "\"", null);
+        database.close();
+
+    }
 
 //    public ArrayList<DeviceSchedulerBO> viewSchedule(){
 //        Log.d("Database "," View all Alarm Entries ");

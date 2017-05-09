@@ -24,6 +24,8 @@ public class UserBean implements Serializable {
 
     private String address;
 
+    private String loginStatus;
+
     @DynamoDBHashKey(attributeName = "USERNAME")
     public String getUserName() {
         return userName;
@@ -67,6 +69,14 @@ public class UserBean implements Serializable {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getLoginStatus() {
+        return loginStatus;
+    }
+
+    public void setLoginStatus(String loginStatus) {
+        this.loginStatus = loginStatus;
     }
 
     public UserBean(String userName, String password, String phoneNumber, String email, String address) {

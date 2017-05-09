@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import com.example.shrutib.smartapp.ConfigureDeviceActivity;
 import com.example.shrutib.smartapp.NetworkDiscovery.NetInfo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,7 +14,7 @@ import java.util.HashMap;
  * Created by shrutib on 4/29/17.
  */
 
-public class DeviceBean implements Parcelable {
+public class DeviceBean implements Serializable {
 
     public static final String EXTRA = ConfigureDeviceActivity.PKG + ".extra";
 //    public static final String EXTRA_POSITION = ActivityMain.PKG + ".extra_position";

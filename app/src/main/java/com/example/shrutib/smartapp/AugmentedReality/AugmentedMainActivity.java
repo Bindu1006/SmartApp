@@ -9,14 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.shrutib.smartapp.R;
 import com.wikitude.architect.ArchitectStartupConfiguration;
 import com.wikitude.architect.ArchitectView;
-import com.wikitude.common.util.SDKBuildInformation;
 import com.wikitude.tools.device.features.MissingDeviceFeatures;
 
 import java.io.BufferedReader;

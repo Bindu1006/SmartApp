@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_login2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/background"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.shrutib.smartapp.SmartDevice.DeviceAlarmActivity"
+    tools:showIn="@layout/app_bar_device_alarm">
+
+    <ImageView
+        android:layout_width="70dp"
+        android:layout_height="60dp"
+        android:src="@drawable/wemo_logo"
+        android:layout_marginTop="0dp"
+        android:id="@+id/logo"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/logo"
+        android:id="@+id/configureSmartDevice"
+        android:text= "@string/device_alarm_msg"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:textAlignment="center"
+        android:textSize="25dp"
+        android:textColor="@color/textbox" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:id="@+id/id_alarmSwitch"
+        android:switchMinWidth="25dp"
+        android:textOn="ON"
+        android:textOff="OFF"
+        android:showText="true"
+        android:thumbTextPadding="8dp"
+        android:layout_toRightOf="@+id/configureSmartDevice"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="0dp"
+        android:textColor="#000000"/>
+
+    <TimePicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/logo"
+        android:layout_marginTop="30dp"
+        android:id="@+id/time_picker"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/time_picker"
+        android:id="@+id/currentStatusMsg"
+        android:text= ""
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:textAlignment="center"
+        android:textSize="25dp"
+        android:textColor="@color/textbox" />
+
+
+
+
+
+</RelativeLayout>
