@@ -6,7 +6,7 @@ android {
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
 //        com.spectrum.smartapp
-        applicationId "com.example.shrutib.smartapp"
+        applicationId "com.spectrum.smartapp"
         minSdkVersion 21
         targetSdkVersion 21
         versionCode 1

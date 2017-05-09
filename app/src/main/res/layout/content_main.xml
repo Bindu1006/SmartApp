@@ -10,7 +10,7 @@
     android:paddingRight="20dp"
     android:paddingTop="@dimen/activity_vertical_margin"
 
-    tools:context="com.example.shrutib.smartapp.MainActivity">
+    tools:context="com.spectrum.smartapp.MainActivity">
 
 
     <RelativeLayout
