@@ -46,13 +46,6 @@ public class MainSamplesListActivity extends ListActivity {
 
 		this.setTitle(this.getActivityTitle());
 
-		/* extract names of samples from res/arrays */
-		final String[] values = this.getListLabels();
-
-		/* use default list-ArrayAdapter */
-//		this.setListAdapter(new ArrayAdapter<String>(this,
-//				android.R.layout.simple_list_item_1, android.R.id.text1, values));
-
 		mPermissionManager = ArchitectView.getPermissionManager();
 	}
 

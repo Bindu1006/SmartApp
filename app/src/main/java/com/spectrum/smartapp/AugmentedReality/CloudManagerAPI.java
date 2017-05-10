@@ -93,7 +93,7 @@ public class CloudManagerAPI {
     // net), or you add the certificate to your certificate store. A tutorial
     // how to do that can be found at
     // https://blogs.oracle.com/gc/entry/unable_to_find_valid_certification
-    private static final String API_ENDPOINT_ROOT = "https://api.wikitude.com";
+    private static final String API_ENDPOINT_ROOT = "https://api-us.wikitude.com";
     private static final int API_DEFAULT_POLL_INTERVAL = 10000;
 
     private static final String PLACEHOLDER_TC_ID = "${TC_ID}";

@@ -3,7 +3,9 @@ package com.spectrum.smartapp.AugmentedReality;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -13,14 +15,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttClientStatusCallback;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttQos;
+import com.spectrum.smartapp.LoginActivity;
+import com.spectrum.smartapp.MainActivity;
 import com.spectrum.smartapp.R;
 import com.spectrum.smartapp.SmartDevice.AlarmReceiver;
+import com.spectrum.smartapp.Utils.DatabaseSqlHelper;
 import com.wikitude.architect.ArchitectStartupConfiguration;
 import com.wikitude.architect.ArchitectView;
 import com.wikitude.tools.device.features.MissingDeviceFeatures;
@@ -54,17 +62,10 @@ public class AugmentedMainActivity extends AppCompatActivity  {
         geoSamples = getListFrom("samples/samples_geo.lst");
         instantSamples = getListFrom("samples/samples_instant.lst");
 
-        this.setContentView( this.getContentViewId() );
-
-        WebView webView = new WebView(this);
-        webView.loadUrl("file:///android_asset/samples/01_Image$Recognition_1_Image$On$Target/js/imageontarget.js");
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.addJavascriptInterface(new WebViewJavaScriptInterface(this), "app");
-
-        // ensure to clean cache when it is no longer required
+            // ensure to clean cache when it is no longer required
         ArchitectView.deleteRootCacheDirectory(this);
 
-        // extract names of samples from res/arrays
+            // extract names of samples from res/arrays
         final String[] values = this.getListLabels();
 
         // use default list-ArrayAdapter */
@@ -75,41 +76,64 @@ public class AugmentedMainActivity extends AppCompatActivity  {
     @Override
     protected void onStart() {
         super.onStart();
-        final Intent intent = new Intent( this, MainSamplesListActivity.class );
-        final List<SampleMeta> activitiesToLaunch = getActivitiesToLaunch();
 
-        String[] activityUrls = new String[activitiesToLaunch.size()];
-        String[] activityTitles = new String[activitiesToLaunch.size()];
-        String[] activityClasses = new String[activitiesToLaunch.size()];
-        boolean[] activitiesIr = new boolean[activitiesToLaunch.size()];
-        boolean[] activitiesGeo = new boolean[activitiesToLaunch.size()];
-        boolean[] activitiesInstant = new boolean[activitiesToLaunch.size()];
-        final String activityTitle = activitiesToLaunch.get(0).categoryName.replace("$", " ");
+        android.support.v7.app.AlertDialog alertDialog = new android.support.v7.app.AlertDialog.Builder(AugmentedMainActivity.this).create();
+
+        DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(AugmentedMainActivity.this);
+        if (databaseHelper.getDeviceCount() == 0) {
+            alertDialog.setTitle("Error");
+            alertDialog.setMessage("You do not have any device added!!! Please add devices to enjoy Augmented Reality.");
+            alertDialog.setButton(android.support.v7.app.AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            Log.d("SHRUTI", "Going back to Main activity ");
+                            Intent intent = new Intent(AugmentedMainActivity.this, MainActivity.class);
+                            startActivity(intent);
+                        }
+                    });
+            alertDialog.show();
+        } else {
+
+            final Intent intent = new Intent( this, MainSamplesListActivity.class );
+            final List<SampleMeta> activitiesToLaunch = getActivitiesToLaunch();
+
+            String[] activityUrls = new String[activitiesToLaunch.size()];
+            String[] activityTitles = new String[activitiesToLaunch.size()];
+            String[] activityClasses = new String[activitiesToLaunch.size()];
+            boolean[] activitiesIr = new boolean[activitiesToLaunch.size()];
+            boolean[] activitiesGeo = new boolean[activitiesToLaunch.size()];
+            boolean[] activitiesInstant = new boolean[activitiesToLaunch.size()];
+            final String activityTitle = activitiesToLaunch.get(0).categoryName.replace("$", " ");
 
 //         check if AR.VideoDrawables are supported on the current device. if not -> show hint-Toast message
-        if (activitiesToLaunch.get(0).categoryName.contains("Video") && ! AugmentedMainActivity.isVideoDrawablesSupported()) {
-            Toast.makeText(this, R.string.videosrawables_fallback, Toast.LENGTH_LONG).show();
-        }
+            if (activitiesToLaunch.get(0).categoryName.contains("Video") && ! AugmentedMainActivity.isVideoDrawablesSupported()) {
+                Toast.makeText(this, R.string.videosrawables_fallback, Toast.LENGTH_LONG).show();
+            }
 
-        final SampleMeta meta = activitiesToLaunch.get(0);
-        activityTitles[0] = (meta.sampleName.replace("$", " "));
-        activityUrls[0] = meta.path;
-        activitiesIr[0] = meta.hasIr;
-        activitiesGeo[0] = meta.hasGeo;
-        activitiesInstant[0] = meta.hasInstant;
-        activityClasses[0] = ("com.spectrum.smartapp.AugmentedReality.AutoHdSampleCamActivity");
+            final SampleMeta meta = activitiesToLaunch.get(0);
+            activityTitles[0] = (meta.sampleName.replace("$", " "));
+            activityUrls[0] = meta.path;
+            activitiesIr[0] = meta.hasIr;
+            activitiesGeo[0] = meta.hasGeo;
+            activitiesInstant[0] = meta.hasInstant;
+            activityClasses[0] = ("com.spectrum.smartapp.AugmentedReality.AutoHdSampleCamActivity");
 
 
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_ARCHITECT_WORLD_URLS_ARRAY, activityUrls);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_CLASSNAMES_ARRAY, activityClasses);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_TILES_ARRAY, activityTitles);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_IR_ARRAY, activitiesIr);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_GEO_ARRAY, activitiesGeo);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_INSTANT_ARRAY, activitiesInstant);
-        intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITY_TITLE_STRING, activityTitle);
+            intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_ARCHITECT_WORLD_URLS_ARRAY, activityUrls);
+            intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_CLASSNAMES_ARRAY, activityClasses);
+            intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_TILES_ARRAY, activityTitles);
+            intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_IR_ARRAY, activitiesIr);
+            intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_GEO_ARRAY, activitiesGeo);
+            intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITIES_INSTANT_ARRAY, activitiesInstant);
+            intent.putExtra(MainSamplesListActivity.EXTRAS_KEY_ACTIVITY_TITLE_STRING, activityTitle);
 
 			/* launch activity */
-        this.startActivity( intent );
+            this.startActivity( intent );
+
+        }
+
+
 
 
     }
@@ -333,33 +357,6 @@ public class AugmentedMainActivity extends AppCompatActivity  {
         } else {
             String extensions = GLES20.glGetString( GLES20.GL_EXTENSIONS );
             return extensions != null && extensions.contains( "GL_OES_EGL_image_external" );
-        }
-    }
-
-
-
-    /*
-     * JavaScript Interface. Web code can access methods in here
-     * (as long as they have the @JavascriptInterface annotation)
-     */
-    public class WebViewJavaScriptInterface {
-
-        private Context context;
-
-        /*
-         * Need a reference to the context in order to sent a post message
-         */
-        public WebViewJavaScriptInterface(Context context) {
-            this.context = context;
-        }
-
-        /*
-         * This method can be called from Android. @JavascriptInterface
-         * required after SDK version 17.
-         */
-        @JavascriptInterface
-        public void makeToast() {
-            Toast.makeText(context, "Hi", Toast.LENGTH_LONG).show();
         }
     }
 

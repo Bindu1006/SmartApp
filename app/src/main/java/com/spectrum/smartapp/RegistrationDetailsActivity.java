@@ -265,7 +265,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
             userDetails.setPhoneNumber(phoneEditText.getText().toString());
 
             DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
-            boolean result = databaseHelper.registerUser(userDetails);
+            boolean result = databaseHelper.registerUser(userDetails, true);
 
             if (result) {
 

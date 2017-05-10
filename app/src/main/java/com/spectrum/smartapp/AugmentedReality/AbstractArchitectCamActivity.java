@@ -2,6 +2,7 @@ package com.spectrum.smartapp.AugmentedReality;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.location.Location;
 import android.location.LocationListener;
@@ -10,7 +11,9 @@ import android.opengl.GLES20;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import com.spectrum.smartapp.R;
@@ -98,6 +101,13 @@ public abstract class AbstractArchitectCamActivity extends Activity implements A
 		        WebView.setWebContentsDebuggingEnabled(true);
 		    }
 		}
+
+		final WebView webView = new WebView(this);
+		webView.addJavascriptInterface(new WebViewJavaScriptInterface(this), "JSInterface");
+		webView.getSettings().setJavaScriptEnabled(true);
+		webView.getSettings().setDomStorageEnabled(true);
+		webView.setWebViewClient(new WebViewClient());
+		webView.addJavascriptInterface(new WebViewJavaScriptInterface(AbstractArchitectCamActivity.this), "JSInterface ");
 
 		/* set AR-view for life-cycle notifications etc. */
 		this.architectView = (ArchitectView)this.findViewById( this.getArchitectViewId()  );
@@ -467,4 +477,30 @@ public abstract class AbstractArchitectCamActivity extends Activity implements A
 	private static double[] getRandomLatLonNearby(final double lat, final double lon) {
 		return new double[] { lat + Math.random()/5-0.1 , lon + Math.random()/5-0.1};
 	}
+
+	/*
+    * JavaScript Interface. Web code can access methods in here
+    * (as long as they have the @JavascriptInterface annotation)
+    */
+	public class WebViewJavaScriptInterface {
+
+		private Context context;
+
+		/*
+         * Need a reference to the context in order to sent a post message
+         */
+		public WebViewJavaScriptInterface(Context context) {
+			this.context = context;
+		}
+
+		/*
+         * This method can be called from Android. @JavascriptInterface
+         * required after SDK version 17.
+         */
+		@JavascriptInterface
+		public void makeToast() {
+			Toast.makeText(context, "Hi", Toast.LENGTH_LONG).show();
+		}
+	}
+
 }

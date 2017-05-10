@@ -33,7 +33,8 @@ var World = {
 				x:0.0
 			},
 			onClick: function(){
-			    app.makeToast();
+			AR.platform.sendJSONObject({action:"TOGGLE", ip:"10.0.0.83"});
+//			    window.JSInterface.makeToast();
               	alert("Button clicked");
             }
 		});

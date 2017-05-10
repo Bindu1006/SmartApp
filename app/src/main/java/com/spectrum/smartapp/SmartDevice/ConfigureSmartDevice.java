@@ -6,14 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -29,12 +26,8 @@ import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.spectrum.smartapp.AugmentedReality.AugmentedMainActivity;
 import com.spectrum.smartapp.AugmentedReality.CloudManagerAPI;
-import com.spectrum.smartapp.AugmentedReality.WikitudeSDKConstants;
 import com.spectrum.smartapp.BeanObjects.DeviceBean;
-import com.spectrum.smartapp.BeanObjects.UserBean;
-import com.spectrum.smartapp.LightsActivity;
 import com.spectrum.smartapp.R;
 import com.spectrum.smartapp.Utils.AmazonClientManager;
 import com.spectrum.smartapp.Utils.DatabaseSqlHelper;
@@ -66,6 +59,9 @@ public class ConfigureSmartDevice extends AppCompatActivity implements Navigatio
         setSupportActionBar(toolbar);
 
         clientManager = new AmazonClientManager(this);
+
+        CreateTargetCollectionTask task = new CreateTargetCollectionTask();
+        task.execute();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -299,9 +295,20 @@ public class ConfigureSmartDevice extends AppCompatActivity implements Navigatio
 
         @Override
         protected Void doInBackground(Void... params) {
-            CloudManagerAPI cloudManagerAPI = new CloudManagerAPI("8071fd998d83998e92462413a28cf15f", 6);
+            // The token to use when connecting to the endpoint
+            final String API_TOKEN = "911c630e7b239b3e0ee69d532b93d198";
+            // The version of the API we will use
+            final int API_VERSION = 2;
+
+            final CloudManagerAPI api = new CloudManagerAPI(API_TOKEN, API_VERSION);
             try {
-                cloudManagerAPI.createTargetCollection("spectrumTest");
+                JSONObject createdTargetCollection = api.createTargetCollection("myFirstTc");
+                System.out.println(" - tc id:      " + createdTargetCollection.getString("id"));
+                System.out.println(" - tc name:    " + createdTargetCollection.getString("name"));
+
+                DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+//                databaseHelper.getLoginStatus().equalsIgnoreCase("FALSE"));
+
             } catch (JSONException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {

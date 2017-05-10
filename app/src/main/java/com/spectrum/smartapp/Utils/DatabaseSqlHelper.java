@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
 import com.spectrum.smartapp.BeanObjects.DeviceAlarmDetails;
 import com.spectrum.smartapp.BeanObjects.DeviceBean;
+import com.spectrum.smartapp.BeanObjects.TargetCollectionDetails;
 import com.spectrum.smartapp.BeanObjects.UserBean;
 import com.spectrum.smartapp.LightsActivity;
 import com.spectrum.smartapp.MainActivity;
@@ -36,8 +37,12 @@ public class DatabaseSqlHelper {
     public static final String DEVICE_ALARM_TABLE_NAME = "DEVICE_ALARM_DETAILS";
     public static final String KEYS_TABLE_NAME = "PUBNUB_KEYS_DETAILS";
     public static final String VIDEO_TABLE_NAME = "VIDEO_STATUS_DETAILS";
+    public static final String WIKITUDE_TARGET_COLLECTION_TABLE_NAME = "WIKITUDE_TARGET_COLLECTION";
+
 
     public static final String USER_CREATE_QUERY = "create table USER_DETAILS (USERNAME text PRIMARY KEY, PASSWORD text not null, PHONENUMBER text, EMAIL text not null, ADDRESS text, LOGIN_STATUS text);";
+
+    public static final String WIKITUDE_TARGET_COLLECTION_CREATE_QUERY = "create table WIKITUDE_TARGET_COLLECTION (USERNAME text PRIMARY KEY, TARGET_COLLECTION_NAME text unique, TARGET_COLLECTION_ID text);";
 
 //    public static final String VIDEO_CREATE_QUERY = "create table VIDEO_STATUS_DETAILS (VIDEO_ID text PRIMARY KEY, VIDEO_STATUS text not null, PHONE_NUMBER text, MESSAGE_SENT text);";
 //
@@ -70,6 +75,7 @@ public class DatabaseSqlHelper {
                 db.execSQL(USER_CREATE_QUERY);
                 db.execSQL(DEVICE_CREATE_QUERY);
                 db.execSQL(DEVICE_ALARM_CREATE_QUERY);
+                db.execSQL(WIKITUDE_TARGET_COLLECTION_CREATE_QUERY);
 //                db.execSQL(KEYS_CREATE_QUERY);
 //                db.execSQL(VIDEO_CREATE_QUERY);
             } catch (SQLiteException e) {
@@ -83,6 +89,7 @@ public class DatabaseSqlHelper {
             db.execSQL(USER_CREATE_QUERY);
             db.execSQL(DEVICE_CREATE_QUERY);
             db.execSQL(DEVICE_ALARM_CREATE_QUERY);
+            db.execSQL(WIKITUDE_TARGET_COLLECTION_CREATE_QUERY);
 //            db.execSQL(KEYS_CREATE_QUERY);
 //            db.execSQL(VIDEO_CREATE_QUERY);
             onCreate(db);
@@ -113,7 +120,7 @@ public class DatabaseSqlHelper {
 //
 //    }
 
-    public boolean registerUser(UserBean userDetails) {
+    public boolean registerUser(UserBean userDetails, boolean isStoreDynamoDB) {
 
         Log.d("Insert User Details : ", userDetails.toString());
         boolean result = true;
@@ -136,7 +143,7 @@ public class DatabaseSqlHelper {
             database.close();
         }
 
-        if (result) {
+        if (result && isStoreDynamoDB) {
             // Insert in Dynamo DB also
             userInfo = userDetails;
             new InsertUserTask().execute();
@@ -590,37 +597,7 @@ public class DatabaseSqlHelper {
 
     }
 
-    public boolean savePhoneNumber(String phoneNumber){
-        boolean result = false;
 
-        database = databaseHelper.getWritableDatabase();
-        String retrieveQuery = "SELECT VIDEO_ID FROM " + VIDEO_TABLE_NAME;
-        Cursor cursor      = database.rawQuery(retrieveQuery, null);
-        String vid = "";
-
-        if (cursor.moveToFirst()) {
-            do {
-                vid = cursor.getString(0);
-            } while (cursor.moveToNext());
-        }
-
-        if(vid != null || !vid.equalsIgnoreCase("")){
-            ContentValues videoValues = new ContentValues();
-            videoValues.put("PHONE_NUMBER", phoneNumber);
-            Log.d("Set phone ",phoneNumber);
-
-            String Update = " UPDATE " +VIDEO_TABLE_NAME+ " set PHONE_NUMBER = \""+phoneNumber+"\" where VIDEO_ID = \""+vid+"\"";
-
-            database.execSQL(Update);
-            result = true;
-        } else {
-            result = false;
-        }
-        cursor.close();
-        database.close();
-        return result;
-
-    }
 
     public String getPhoneNumber(){
         Log.d("DATABASE","get Phone Number");
@@ -693,6 +670,26 @@ public class DatabaseSqlHelper {
         database.close();
         return result;
 
+
+    }
+
+    public TargetCollectionDetails getWikitudeTargetCollectionData(String username){
+        Log.d("DATABASE","get target collection");
+
+        database = databaseHelper.getWritableDatabase();
+        String retrieveQuery = "SELECT * FROM " + WIKITUDE_TARGET_COLLECTION_TABLE_NAME;
+        Cursor cursor      = database.rawQuery(retrieveQuery, null);
+        TargetCollectionDetails collectionDetails = new TargetCollectionDetails();
+
+        if (cursor.moveToFirst()) {
+            do {
+                collectionDetails.setCollectionID(cursor.getString(2));
+                collectionDetails.setCollectionName(cursor.getString(1));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        database.close();
+        return collectionDetails;
 
     }
 

@@ -88,4 +88,25 @@ public class DynamoDbHelper {
         }
         return result;
     }
+
+    public static UserBean retrieveUserInfo(String username) {
+        AmazonDynamoDBClient ddb = ConfigureSmartDevice.clientManager
+                .ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+        UserBean userData = null;
+
+        try {
+
+            Log.d(TAG, "Retrieve user data");
+            userData = mapper.load(UserBean.class, username);
+            Log.d(TAG, "User & device inserted");
+
+        } catch (AmazonServiceException ex) {
+            Log.e(TAG, "Error inserting users");
+            ConfigureSmartDevice.clientManager
+                    .wipeCredentialsOnAuthError(ex);
+            return userData;
+        }
+        return userData;
+    }
 }
