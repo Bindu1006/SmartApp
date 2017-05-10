@@ -33,6 +33,7 @@ var World = {
 				x:0.0
 			},
 			onClick: function(){
+			    app.makeToast();
               	alert("Button clicked");
             }
 		});
