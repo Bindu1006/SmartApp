@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
+import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +29,7 @@ import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
 import com.spectrum.smartapp.AugmentedReality.AugmentedMainActivity;
+import com.spectrum.smartapp.BeanObjects.DeviceAlarmDetails;
 import com.spectrum.smartapp.BeanObjects.DeviceBean;
 import com.spectrum.smartapp.SmartDevice.DeviceAlarmActivity;
 import com.spectrum.smartapp.Utils.DatabaseSqlHelper;
@@ -34,6 +38,8 @@ import org.json.JSONObject;
 
 import java.security.KeyStore;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -42,7 +48,7 @@ import java.util.UUID;
 
 public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
 
-    String LOG_TAG = "LightsListAdapter";
+    String TAG = "LightsListAdapter";
 
     private Context thisContext;
     private Activity thisActivity;
@@ -66,6 +72,10 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
     // Certificate and key aliases in the KeyStoref
     private static final String CERTIFICATE_ID = "default";
 
+    private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
+    private TextToSpeech textToSpeech;
+    private boolean _ready = false;
+
     AWSIotMqttManager mqttManager;
     String clientId;
     AWSIotClient mIotAndroidClient;
@@ -76,6 +86,9 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
     String certificateId;
     KeyStore clientKeyStore = null;
     CognitoCachingCredentialsProvider credentialsProvider;
+    DatabaseSqlHelper databaseHelper;
+
+    String switchStatus;
 
 
     public LightsListAdapter(Activity act, Context context, ArrayList<DeviceBean> users) {
@@ -119,23 +132,23 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
             if (AWSIotKeystoreHelper.isKeystorePresent(keystorePath, keystoreName)) {
                 if (AWSIotKeystoreHelper.keystoreContainsAlias(certificateId, keystorePath,
                         keystoreName, keystorePassword)) {
-                    Log.i(LOG_TAG, "Certificate " + certificateId
+                    Log.i(TAG, "Certificate " + certificateId
                             + " found in keystore - using for MQTT.");
                     // load keystore from file into memory to pass on connection
                     clientKeyStore = AWSIotKeystoreHelper.getIotKeystore(certificateId,
                             keystorePath, keystoreName, keystorePassword);
                 } else {
-                    Log.i(LOG_TAG, "Key/cert " + certificateId + " not found in keystore.");
+                    Log.i(TAG, "Key/cert " + certificateId + " not found in keystore.");
                 }
             } else {
-                Log.i(LOG_TAG, "Keystore " + keystorePath + "/" + keystoreName + " not found.");
+                Log.i(TAG, "Keystore " + keystorePath + "/" + keystoreName + " not found.");
             }
         } catch (Exception e) {
-            Log.e(LOG_TAG, "An error occurred retrieving cert/key from keystore.", e);
+            Log.e(TAG, "An error occurred retrieving cert/key from keystore.", e);
         }
 
         if (clientKeyStore == null) {
-            Log.i(LOG_TAG, "Cert/key was not found in keystore - creating new key and certificate.");
+            Log.i(TAG, "Cert/key was not found in keystore - creating new key and certificate.");
 
             new Thread(new Runnable() {
                 @Override
@@ -150,7 +163,7 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
                         final CreateKeysAndCertificateResult createKeysAndCertificateResult;
                         createKeysAndCertificateResult =
                                 mIotAndroidClient.createKeysAndCertificate(createKeysAndCertificateRequest);
-                        Log.i(LOG_TAG,
+                        Log.i(TAG,
                                 "Cert ID: " +
                                         createKeysAndCertificateResult.getCertificateId() +
                                         " created.");
@@ -182,11 +195,11 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                Log.e(LOG_TAG, "set enabled is true");
+                                Log.e(TAG, "set enabled is true");
                             }
                         });
                     } catch (Exception e) {
-                        Log.e(LOG_TAG,
+                        Log.e(TAG,
                                 "Exception occurred when generating new private key and certificate.",
                                 e);
                         e.printStackTrace();
@@ -211,29 +224,29 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
                 @Override
                 public void onStatusChanged(final AWSIotMqttClientStatus status,
                                             final Throwable throwable) {
-                    Log.d(LOG_TAG, "Status = " + String.valueOf(status));
+                    Log.d(TAG, "Status = " + String.valueOf(status));
 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             if (status == AWSIotMqttClientStatus.Connecting) {
-                                Log.e(LOG_TAG, "Connecting...");
+                                Log.e(TAG, "Connecting...");
 
                             } else if (status == AWSIotMqttClientStatus.Connected) {
-                                Log.e(LOG_TAG, "Connected");
+                                Log.e(TAG, "Connected");
 
                             } else if (status == AWSIotMqttClientStatus.Reconnecting) {
                                 if (throwable != null) {
-                                    Log.e(LOG_TAG, "Connection error.", throwable);
+                                    Log.e(TAG, "Connection error.", throwable);
                                 }
-                                Log.e(LOG_TAG, "Reconnecting");
+                                Log.e(TAG, "Reconnecting");
                             } else if (status == AWSIotMqttClientStatus.ConnectionLost) {
                                 if (throwable != null) {
-                                    Log.e(LOG_TAG, "Connection error.", throwable);
+                                    Log.e(TAG, "Connection error.", throwable);
                                 }
-                                Log.e(LOG_TAG, "Disconnected");
+                                Log.e(TAG, "Disconnected");
                             } else {
-                                Log.e(LOG_TAG, "Disconnected");
+                                Log.e(TAG, "Disconnected");
 
                             }
                         }
@@ -241,7 +254,7 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
                 }
             });
         } catch (final Exception e) {
-            Log.e(LOG_TAG, "Connection error.", e);
+            Log.e(TAG, "Connection error.", e);
         }
 
         // Lookup view for data population
@@ -249,6 +262,12 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
 
         // Populate the data into the template view using the data object
         ipAddress.setText(deviceName);
+        ArrayList<DeviceAlarmDetails> alarmDetailsList = databaseHelper.viewDeviceAlarm(ipString);
+        if (alarmDetailsList != null || alarmDetailsList.size() > 0) {
+            ImageView imageView = (ImageView) convertView.findViewById(R.id.device_logo);
+            Drawable id = getContext().getResources().getDrawable(R.drawable.wemoalarm);
+            imageView.setImageDrawable(id);
+        }
 
 
         final ImageView imageView = (ImageView) convertView.findViewById(R.id.control_device);
@@ -273,15 +292,15 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
 
                     mqttManager.publishString(msg.toString(), topic, AWSIotMqttQos.QOS0);
                 } catch (Exception e) {
-                    Log.e(LOG_TAG, "Publish error.", e);
+                    Log.e(TAG, "Publish error.", e);
                 }
 
                 if (status.equalsIgnoreCase("OFF")) {
-                    Drawable id = getContext().getResources().getDrawable(R.drawable.switch_on);
+                    Drawable id = getContext().getResources().getDrawable(R.drawable.poweron);
                     imageView.setImageDrawable(id);
                     databaseHelper.updateDeviceStatus(ipString, "ON");
                 } else {
-                    Drawable id = getContext().getResources().getDrawable(R.drawable.switch_off);
+                    Drawable id = getContext().getResources().getDrawable(R.drawable.greypower);
                     imageView.setImageDrawable(id);
                     databaseHelper.updateDeviceStatus(ipString, "OFF");
                 }
@@ -306,6 +325,73 @@ public class LightsListAdapter extends ArrayAdapter<DeviceBean> {
 
         // Return the completed view to render on screen
         return convertView;
+
+    }
+
+//    void startVoiceRecognitionActivity() {
+//        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+//        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getClass()
+//                .getPackage().getName());
+//        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+//                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+//        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
+//        ((Activity) getContext()).startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
+//    }
+
+
+
+    public class ConnectAmazonPubSubTask extends AsyncTask<String, Void, Void> {
+
+        private boolean connected = false;
+
+        @Override
+        protected Void doInBackground(final String... deviceName) {
+
+            //        Connect to Amazon IOS
+            try {
+                mqttManager.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
+                    @Override
+                    public void onStatusChanged(final AWSIotMqttClientStatus status,
+                                                final Throwable throwable) {
+                        Log.d(TAG, "Status = " + String.valueOf(status));
+
+                        if (status == AWSIotMqttClientStatus.Connected) {
+                            Log.e(TAG, "Connected");
+                            connected = true;
+                            final String topic = "$aws/things/RaspberryPi/shadow/update/test";
+                            Log.d("SHRUTI","AWS CONNECT done");
+                            DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(thisContext);
+
+                            String ipString = databaseHelper.getDeviceIP(deviceName[0]);
+
+                            try {
+                                databaseHelper.updateDeviceStatus(ipString, switchStatus);
+
+                                JSONObject msg = new JSONObject();
+                                msg.put("ip_address", ipString);
+                                msg.put("cmd", switchStatus);
+
+
+                                mqttManager.publishString(msg.toString(), topic, AWSIotMqttQos.QOS0);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Publish error.", e);
+                            }
+                        }
+
+                    }
+                });
+            } catch (final Exception e) {
+                Log.e(TAG, "Connection error.", e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            // TODO Auto-generated method stub
+            super.onPostExecute(result);
+
+        }
 
     }
 

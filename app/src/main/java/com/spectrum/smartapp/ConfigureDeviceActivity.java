@@ -101,7 +101,7 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
                 setSmartDevice(ipAddress, vendorName);
 
 
-                Toast.makeText(ConfigureDeviceActivity.this, "myPos " + i + " " + ipAddress, Toast.LENGTH_LONG).show();
+                Toast.makeText(ConfigureDeviceActivity.this, ipAddress, Toast.LENGTH_LONG).show();
             }
         });
         list.setEmptyView(findViewById(R.id.list_empty));
@@ -154,18 +154,14 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.nav_side_settings) {
+            Intent intent = new Intent(getBaseContext(), SettingsActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_loc_settings) {
+            // TODO Handle the location action
+        } else if (id == R.id.nav_contact) {
+            Intent intent = new Intent(getBaseContext(), ContactActivity.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -379,11 +375,26 @@ public class ConfigureDeviceActivity extends ActivityNet implements NavigationVi
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+        super.onBackPressed();
+        Intent intent;
+        if (getIntent().getStringExtra("CALLED_FROM").equals("ADD_DEVICE")) {
+           intent = new Intent(ConfigureDeviceActivity.this, LightsActivity.class);
         } else {
-            super.onBackPressed();
+           intent = new Intent(ConfigureDeviceActivity.this, MainActivity.class);
+
         }
+        startActivity(intent);
+    }
+
+    public ArrayList<String> getAllDevices() {
+        DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(ConfigureDeviceActivity.this);
+        ArrayList<DeviceBean> deviceList = databaseHelper.getAllDeviceDetails();
+        ArrayList<String> ipList = new ArrayList<>();
+        for (DeviceBean device : deviceList) {
+            ipList.add(device.getDeviceIpAddress());
+        }
+
+        return ipList;
+
     }
 }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="80dp"
+        android:src="@drawable/wemo_logo"
+        android:id="@+id/device_logo"/>
+
+    <RelativeLayout
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="0dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/blackText"
+            android:textSize="20dp"
+            android:ellipsize="marquee"
+            android:layout_marginLeft="8dp"
+            android:gravity="center_vertical"
+            android:id="@+id/device_name">
+        </TextView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/blackText"
+            android:textSize="20dp"
+            android:layout_below="@id/device_name"
+            android:ellipsize="marquee"
+            android:layout_marginLeft="8dp"
+            android:gravity="center_vertical"
+            android:id="@+id/device_usage">
+        </TextView>
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="60dp"
+        android:layout_height="50dp"
+        android:textColor="@color/blackText"
+        android:layout_marginTop="16dp"
+        android:textSize="25dp"
+        android:text="ON"
+        android:layout_below="@id/device_name"
+        android:ellipsize="marquee"
+        android:layout_marginLeft="50dp"
+        android:gravity="center_vertical"
+        android:id="@+id/device_status">
+    </TextView>
+
+
+
+</LinearLayout>

@@ -12,8 +12,11 @@ import com.amazonaws.services.dynamodbv2.model.ConditionalOperator;
 import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
 import com.amazonaws.util.ImmutableMapParameter;
 import com.spectrum.smartapp.BeanObjects.DeviceBean;
+import com.spectrum.smartapp.BeanObjects.TargetCollectionDetails;
 import com.spectrum.smartapp.BeanObjects.UserBean;
 import com.spectrum.smartapp.BeanObjects.UserDeviceBean;
+import com.spectrum.smartapp.LightsActivity;
+import com.spectrum.smartapp.LoginActivity;
 import com.spectrum.smartapp.RegistrationDetailsActivity;
 import com.spectrum.smartapp.SmartDevice.ConfigureSmartDevice;
 
@@ -90,7 +93,7 @@ public class DynamoDbHelper {
     }
 
     public static UserBean retrieveUserInfo(String username) {
-        AmazonDynamoDBClient ddb = ConfigureSmartDevice.clientManager
+        AmazonDynamoDBClient ddb = LoginActivity.clientManager
                 .ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
         UserBean userData = null;
@@ -108,5 +111,51 @@ public class DynamoDbHelper {
             return userData;
         }
         return userData;
+    }
+
+    public static boolean insertUserTargetCollectionDetails(TargetCollectionDetails data) {
+        AmazonDynamoDBClient ddb = RegistrationDetailsActivity.clientManager
+                .ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+
+        boolean result = true;
+
+        try {
+
+            Log.d(TAG, "Inserting target collection data");
+            mapper.save(data);
+            Log.d(TAG, "target collection inserted");
+
+        } catch (AmazonServiceException ex) {
+            Log.e(TAG, "Error inserting users");
+            RegistrationDetailsActivity.clientManager
+                    .wipeCredentialsOnAuthError(ex);
+            result = false;
+        }
+        return result;
+    }
+
+    public static boolean deleteDeviceDetails(String data) {
+        AmazonDynamoDBClient ddb = LightsActivity.clientManager
+                .ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+        UserDeviceBean device = new UserDeviceBean();
+        device.setUserName(data);
+
+        boolean result = true;
+
+        try {
+
+            Log.d(TAG, "Delete Device data");
+            mapper.delete(device);
+            Log.d(TAG, "device data deleted");
+
+        } catch (AmazonServiceException ex) {
+            Log.e(TAG, "Error deleting device");
+            LightsActivity.clientManager
+                    .wipeCredentialsOnAuthError(ex);
+            result = false;
+        }
+        return result;
     }
 }

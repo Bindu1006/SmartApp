@@ -17,11 +17,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.spectrum.smartapp.BeanObjects.DeviceBean;
+import com.spectrum.smartapp.BeanObjects.UserBean;
+import com.spectrum.smartapp.ContactActivity;
 import com.spectrum.smartapp.R;
+import com.spectrum.smartapp.SettingsActivity;
 import com.spectrum.smartapp.Utils.DatabaseSqlHelper;
 
 import java.util.Calendar;
@@ -35,8 +39,28 @@ public class DeviceAlarmActivity extends AppCompatActivity implements Navigation
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_alarm);
+        DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        UserBean user = databaseHelper.getUserDetails();
+
+        View header=navigationView.getHeaderView(0);
+        TextView settingUsernameTxt = (TextView)header.findViewById(R.id.settingsUsername);
+        TextView settingEmail = (TextView)header.findViewById(R.id.settingsEmailView);
+        settingUsernameTxt.setText(user.getUserName());
+        settingEmail.setText(user.getEmail());
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+        
     }
 
     @Override
@@ -88,18 +112,14 @@ public class DeviceAlarmActivity extends AppCompatActivity implements Navigation
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.nav_side_settings) {
+            Intent intent = new Intent(getBaseContext(), SettingsActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_loc_settings) {
+            // TODO Handle the location action
+        } else if (id == R.id.nav_contact) {
+            Intent intent = new Intent(getBaseContext(), ContactActivity.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

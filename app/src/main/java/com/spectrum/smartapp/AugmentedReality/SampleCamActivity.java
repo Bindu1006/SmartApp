@@ -27,6 +27,8 @@ import com.amazonaws.services.iot.AWSIotClient;
 import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
+import com.spectrum.smartapp.LightsActivity;
+import com.spectrum.smartapp.MainActivity;
 import com.spectrum.smartapp.R;
 import com.spectrum.smartapp.SmartDevice.AlarmReceiver;
 import com.spectrum.smartapp.Utils.AmazonClientManager;
@@ -443,5 +445,12 @@ public class SampleCamActivity extends AbstractArchitectCamActivity {
 
 		}
 
+	}
+
+	@Override
+	public void onBackPressed() {
+		Log.d("hi","hellos");
+		Intent intent = new Intent(getBaseContext(), MainActivity.class);
+		startActivity(intent);
 	}
 }

@@ -87,18 +87,12 @@ public class StartUpConfigurePiActivity extends AppCompatActivity implements Nav
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.nav_side_settings) {
+            // TODO Handle the settings action
+        } else if (id == R.id.nav_loc_settings) {
+            // TODO Handle the location action
+        } else if (id == R.id.nav_contact) {
+            // TODO Handle the contact action
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

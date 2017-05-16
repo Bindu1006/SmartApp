@@ -10,11 +10,13 @@ import android.util.Log;
 
 import com.spectrum.smartapp.ConfigureDeviceActivity;
 import com.spectrum.smartapp.R;
+import com.spectrum.smartapp.Utils.DatabaseSqlHelper;
 import com.spectrum.smartapp.Utils.Db;
 import com.spectrum.smartapp.BeanObjects.DeviceBean;
 import com.spectrum.smartapp.Utils.Prefs;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 /**
  * Created by shrutib on 4/29/17.
@@ -60,6 +62,7 @@ public abstract class AbstractDiscovery extends AsyncTask<Void, DeviceBean, Void
         if (mDiscover != null) {
             final ConfigureDeviceActivity discover = mDiscover.get();
             if (discover != null) {
+                ArrayList<String> ipList = discover.getAllDevices();
                 if (!isCancelled()) {
                     if (host[0] != null) {
 
@@ -75,9 +78,13 @@ public abstract class AbstractDiscovery extends AsyncTask<Void, DeviceBean, Void
                                 name = c.getString(0);
                                 Log.d("Shruti NAME Discover: ", c.getString(0));
 
-                                if (name.toLowerCase().contains("xerox") || name.toLowerCase().contains("philips")) {
-                                    discover.addHost(host[0], name);
-                                }
+
+//                                if (!ipList.contains(host[0].ipAddress)) {
+                                    if (name.toLowerCase().contains("belkin") || name.toLowerCase().contains("xerox")) {
+                                        discover.addHost(host[0], name);
+                                    }
+//                                }
+
                             }
                         } catch (SQLiteException e) {
                             Log.e(ConfigureDeviceActivity.TAG, e.getMessage());

@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttClientStatusCallback;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttQos;
+import com.spectrum.smartapp.LightsActivity;
 import com.spectrum.smartapp.LoginActivity;
 import com.spectrum.smartapp.MainActivity;
 import com.spectrum.smartapp.R;
@@ -362,12 +363,9 @@ public class AugmentedMainActivity extends AppCompatActivity  {
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
+        Log.d("hi","hellos");
+        Intent intent = new Intent(getBaseContext(), LightsActivity.class);
+        startActivity(intent);
     }
 
 }

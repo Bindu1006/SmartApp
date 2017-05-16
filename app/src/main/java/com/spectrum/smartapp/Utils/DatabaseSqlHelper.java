@@ -21,6 +21,7 @@ import com.spectrum.smartapp.BeanObjects.TargetCollectionDetails;
 import com.spectrum.smartapp.BeanObjects.UserBean;
 import com.spectrum.smartapp.LightsActivity;
 import com.spectrum.smartapp.MainActivity;
+import com.spectrum.smartapp.RegistrationDetailsActivity;
 
 import java.util.ArrayList;
 
@@ -35,7 +36,8 @@ public class DatabaseSqlHelper {
     public static final String USER_DEVICE_TABLE_NAME = "USER_DEVICE_DETAILS";
     public static final String DEVICE_TABLE_NAME = "DEVICE_DETAILS";
     public static final String DEVICE_ALARM_TABLE_NAME = "DEVICE_ALARM_DETAILS";
-    public static final String KEYS_TABLE_NAME = "PUBNUB_KEYS_DETAILS";
+    public static final String APP_SETTINGS_TABLE_NAME = "APP_SETTINGS";
+    public static final String VIDEO_SMS_STATUS_TABLE_NAME = "VIDEO_SMS_STATUS";
     public static final String VIDEO_TABLE_NAME = "VIDEO_STATUS_DETAILS";
     public static final String WIKITUDE_TARGET_COLLECTION_TABLE_NAME = "WIKITUDE_TARGET_COLLECTION";
 
@@ -44,9 +46,9 @@ public class DatabaseSqlHelper {
 
     public static final String WIKITUDE_TARGET_COLLECTION_CREATE_QUERY = "create table WIKITUDE_TARGET_COLLECTION (USERNAME text PRIMARY KEY, TARGET_COLLECTION_NAME text unique, TARGET_COLLECTION_ID text);";
 
-//    public static final String VIDEO_CREATE_QUERY = "create table VIDEO_STATUS_DETAILS (VIDEO_ID text PRIMARY KEY, VIDEO_STATUS text not null, PHONE_NUMBER text, MESSAGE_SENT text);";
-//
-//    public static final String KEYS_CREATE_QUERY = "create table PUBNUB_KEYS_DETAILS (PUBLISH_KEYS text PRIMARY KEY, SUBSCRIBE_KEYS text not null);";
+    public static final String VIDEO_SMS_STATUS_CREATE_QUERY = "create table VIDEO_STATUS_DETAILS (TIMESTAMP DATETIME DEFAULT CURRENT_TIMESTAMP PRIMARY KEY, MESSAGE_STATUS text);";
+
+    public static final String APP_SETTINGS_CREATE_QUERY = "create table APP_SETTINGS (_id text PRIMARY KEY, USERNAME text, LOCATION_SETTINGS text, MOTION_SETTINGS text);";
 
     public static final String DEVICE_CREATE_QUERY = "create table DEVICE_DETAILS (DEVICE_IP text PRIMARY KEY, DEVICE_NAME text not null,DEVICE_STATUS text not null, VENDOR_NAME text not null );";
 
@@ -76,7 +78,7 @@ public class DatabaseSqlHelper {
                 db.execSQL(DEVICE_CREATE_QUERY);
                 db.execSQL(DEVICE_ALARM_CREATE_QUERY);
                 db.execSQL(WIKITUDE_TARGET_COLLECTION_CREATE_QUERY);
-//                db.execSQL(KEYS_CREATE_QUERY);
+                db.execSQL(APP_SETTINGS_CREATE_QUERY);
 //                db.execSQL(VIDEO_CREATE_QUERY);
             } catch (SQLiteException e) {
                 e.printStackTrace();
@@ -90,7 +92,7 @@ public class DatabaseSqlHelper {
             db.execSQL(DEVICE_CREATE_QUERY);
             db.execSQL(DEVICE_ALARM_CREATE_QUERY);
             db.execSQL(WIKITUDE_TARGET_COLLECTION_CREATE_QUERY);
-//            db.execSQL(KEYS_CREATE_QUERY);
+            db.execSQL(APP_SETTINGS_CREATE_QUERY);
 //            db.execSQL(VIDEO_CREATE_QUERY);
             onCreate(db);
         }
@@ -152,26 +154,40 @@ public class DatabaseSqlHelper {
 
     }
 
-    public UserBean retrieveUserDetails(UserBean userDetails) {
+    public boolean updateUser(UserBean userDetails, boolean isStoreDynamoDB) {
 
-        Log.d("Retrieve User Data : ", userDetails.toString());
-
+        Log.d("Update User Details : ", userDetails.toString());
+        boolean result = true;
         database = databaseHelper.getWritableDatabase();
-        String selectQuery = "SELECT * FROM " + USER_TABLE_NAME + " where USERNAME = \""+userDetails.getUserName() +"\"";
-        Cursor cursor      = database.rawQuery(selectQuery, null);
-        UserBean retrievedUserDetails = null;
-//        ArrayList<IPAddressDetails> deviceDetailsList = new ArrayList<IPAddressDetails>();
+        int rowsUpdated = 0;
 
-        if (cursor.moveToFirst()) {
-            do {
-                retrievedUserDetails = new UserBean(cursor.getString(0), cursor.getString(1),
-                        cursor.getString(2), cursor.getString(3), cursor.getString(4));
-            } while (cursor.moveToNext());
+        ContentValues userValues = new ContentValues();
+        userValues.put("USERNAME", userDetails.getUserName());
+        userValues.put("PASSWORD", userDetails.getPassword());
+        userValues.put("PHONENUMBER", userDetails.getPhoneNumber());
+        userValues.put("EMAIL", userDetails.getEmail());
+        userValues.put("ADDRESS", userDetails.getAddress());
+        userValues.put("LOGIN_STATUS", "TRUE");
+
+        try{
+            rowsUpdated  = database.update(USER_TABLE_NAME, userValues, " USERNAME = \"" + userDetails.getUserName() +"\"", null);
+        }catch(SQLiteConstraintException e){
+            Log.e("Database Exception",   "This code doesn't show");
+            result = false;
+        } finally {
+            database.close();
         }
-        database.close();
-        return retrievedUserDetails;
+
+        if (rowsUpdated > 0 && isStoreDynamoDB) {
+            // TODO Update in Dynamo DB also
+//            userInfo = userDetails;
+//            new InsertUserTask().execute();
+        }
+        return result;
 
     }
+
+
 
     public UserBean getUserDetails() {
 
@@ -271,7 +287,7 @@ public class DatabaseSqlHelper {
 
     }
 
-    public void insertDynamoSmartDeviceData(DeviceBean deviceDetails) {
+    private void insertDynamoSmartDeviceData(DeviceBean deviceDetails) {
 
         Log.d("Insert Smart Device : ", "Dynamo DB");
 
@@ -281,7 +297,7 @@ public class DatabaseSqlHelper {
 
     }
 
-    public void deleteSmartDeviceData(DeviceBean deviceDetails) {
+    private void deleteSmartDeviceData(DeviceBean deviceDetails) {
 
         Log.d("Delete Smart Device : ", "Device Details");
         boolean result = true;
@@ -300,15 +316,15 @@ public class DatabaseSqlHelper {
 
     }
 
-    public void deleteUserData(UserBean userDetails) {
+    public void deleteUserData(String username) {
 
-        Log.d("Delete User : ", "User : " +userDetails);
+        Log.d("Delete User : ", "User : " +username);
 
         database = databaseHelper.getWritableDatabase();
 
         try{
             database.delete(USER_TABLE_NAME, "USERNAME = ?",
-                    new String[] { String.valueOf(userDetails.getUserName()) });
+                    new String[] { String.valueOf(username) });
         }catch(SQLiteConstraintException e){
             Log.e("Database Exception",   "This code doesn't show");
         } finally {
@@ -318,7 +334,7 @@ public class DatabaseSqlHelper {
 
     public String getLoginStatus(){
 
-        Log.d("Get Login Status : ", "Device Details");
+        Log.d("Get Login Status : ", "status");
         database = databaseHelper.getWritableDatabase();
         String selectQuery = "SELECT LOGIN_STATUS FROM " + USER_TABLE_NAME;
 
@@ -438,6 +454,17 @@ public class DatabaseSqlHelper {
 
     }
 
+    public void deleteDeviceData(String ipAddress){
+
+        Log.d("Delete Device Details: ", ipAddress);
+        database = databaseHelper.getWritableDatabase();
+        database.delete(DEVICE_TABLE_NAME, "DEVICE_IP = ?",
+                new String[] { String.valueOf(ipAddress) });
+
+        database.close();
+
+    }
+
     public void updateDeviceStatus(String ipAddress, String status){
 
         Log.d("Get Device Status : ", "Device Details");
@@ -450,6 +477,27 @@ public class DatabaseSqlHelper {
 
         Log.d("UPDATED", " " + rowsUpdated);
         database.close();
+
+    }
+
+    public String getDeviceIP(String deviceName){
+
+        Log.d("Get Device IP : ", "Device Name: "+deviceName);
+        database = databaseHelper.getWritableDatabase();
+        String getDeviceIPQuery = "SELECT * FROM " + DEVICE_TABLE_NAME + " where DEVICE_NAME = \""+deviceName +"\"";
+
+        Cursor cursor      = database.rawQuery(getDeviceIPQuery, null);
+        String deviceIp = null;
+        if (cursor.moveToFirst()) {
+            do {
+                deviceIp = cursor.getString(0);
+            } while (cursor.moveToNext());
+        }
+
+        Log.d("Data", " " + deviceIp);
+        database.close();
+
+        return deviceIp;
 
     }
 
@@ -482,34 +530,61 @@ public class DatabaseSqlHelper {
 
     }
 
-//    public ArrayList<DeviceSchedulerBO> viewSchedule(){
-//        Log.d("Database "," View all Alarm Entries ");
-//
-//        database = databaseHelper.getWritableDatabase();
-//        String selectQuery = "SELECT * FROM " + ALARM_TABLE_NAME;
-//        Cursor cursor      = database.rawQuery(selectQuery, null);
-//        ArrayList<DeviceSchedulerBO> deviceSchedulerList = new ArrayList<>();
-//        String[] data      = null;
-//
-//
-//        if (cursor.moveToFirst()) {
-//            do {
-//                //Setting device Scheduler details fetched from the database and adding to the list
-//                DeviceSchedulerBO devideSchedulerDetails = new DeviceSchedulerBO();
-//                devideSchedulerDetails.setDeviceName(cursor.getString(1));
-//                devideSchedulerDetails.setDeviceIP(cursor.getString(2));
-//                devideSchedulerDetails.setDeviceStatus(cursor.getString(3));
-//                devideSchedulerDetails.setAlarmTime(cursor.getString(4));
-//                deviceSchedulerList.add(devideSchedulerDetails);
-//
-//            } while (cursor.moveToNext());
-//        }
-//        Log.d("DATA : ", "LIST :" + deviceSchedulerList);
-//
-//        cursor.close();
-//        database.close();
-//        return deviceSchedulerList;
-//    }
+    public ArrayList<DeviceAlarmDetails> viewAlarm(){
+        Log.d("Database "," View all Alarm Entries ");
+
+        database = databaseHelper.getWritableDatabase();
+        String selectQuery = "SELECT * FROM " + DEVICE_ALARM_TABLE_NAME;
+        Cursor cursor      = database.rawQuery(selectQuery, null);
+        ArrayList<DeviceAlarmDetails> deviceSchedulerList = new ArrayList<>();
+        String[] data      = null;
+
+
+        if (cursor.moveToFirst()) {
+            do {
+                //Setting device Scheduler details fetched from the database and adding to the list
+                DeviceAlarmDetails devideSchedulerDetails = new DeviceAlarmDetails();
+                devideSchedulerDetails.setDeviceName(cursor.getString(1));
+                devideSchedulerDetails.setDeviceIP(cursor.getString(2));
+                devideSchedulerDetails.setDeviceStatus(cursor.getString(3));
+                devideSchedulerDetails.setAlarmTime(cursor.getString(4));
+                deviceSchedulerList.add(devideSchedulerDetails);
+
+            } while (cursor.moveToNext());
+        }
+        Log.d("DATA : ", "LIST :" + deviceSchedulerList);
+
+        cursor.close();
+        database.close();
+        return deviceSchedulerList;
+    }
+
+    public ArrayList<DeviceAlarmDetails> viewDeviceAlarm(String ipAddress){
+        Log.d("Database "," View all Alarm Entries ");
+
+        database = databaseHelper.getWritableDatabase();
+        String selectQuery = "SELECT * FROM " + DEVICE_ALARM_TABLE_NAME + " where DEVICE_IP  = \""+ ipAddress +"\"";;
+        Cursor cursor      = database.rawQuery(selectQuery, null);
+        ArrayList<DeviceAlarmDetails> deviceSchedulerList = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                //Setting device Scheduler details fetched from the database and adding to the list
+                DeviceAlarmDetails devideSchedulerDetails = new DeviceAlarmDetails();
+                devideSchedulerDetails.setDeviceName(cursor.getString(1));
+                devideSchedulerDetails.setDeviceIP(cursor.getString(2));
+                devideSchedulerDetails.setDeviceStatus(cursor.getString(3));
+                devideSchedulerDetails.setAlarmTime(cursor.getString(4));
+                deviceSchedulerList.add(devideSchedulerDetails);
+
+            } while (cursor.moveToNext());
+        }
+        Log.d("DATA : ", "LIST Size: " + deviceSchedulerList.size());
+
+        cursor.close();
+        database.close();
+        return deviceSchedulerList;
+    }
 
     public String getVideoStatus(){
         Log.d("Database "," Get Video Status Entries ");
@@ -673,7 +748,7 @@ public class DatabaseSqlHelper {
 
     }
 
-    public TargetCollectionDetails getWikitudeTargetCollectionData(String username){
+    public TargetCollectionDetails getWikitudeTargetCollectionData(){
         Log.d("DATABASE","get target collection");
 
         database = databaseHelper.getWritableDatabase();
@@ -683,6 +758,7 @@ public class DatabaseSqlHelper {
 
         if (cursor.moveToFirst()) {
             do {
+                collectionDetails.setUsername(cursor.getString(0));
                 collectionDetails.setCollectionID(cursor.getString(2));
                 collectionDetails.setCollectionName(cursor.getString(1));
             } while (cursor.moveToNext());
@@ -690,6 +766,146 @@ public class DatabaseSqlHelper {
         cursor.close();
         database.close();
         return collectionDetails;
+
+    }
+
+    public void deleteWikitudeTargetCollectionData(String username){
+        Log.d("DATABASE","get target collection");
+
+        database = databaseHelper.getWritableDatabase();
+        try{
+            database.delete(WIKITUDE_TARGET_COLLECTION_TABLE_NAME, "USERNAME = ?",
+                    new String[] { String.valueOf(username) });
+        }catch(SQLiteConstraintException e){
+            Log.e("Database Exception",   "This code doesn't show");
+        } finally {
+            database.close();
+        }
+
+    }
+
+    public String getLocationSettingsData(){
+        Log.d("DATABASE","getLocationSettingsData");
+
+        database = databaseHelper.getWritableDatabase();
+        String retrieveQuery = "SELECT LOCATION_SETTINGS FROM " + APP_SETTINGS_TABLE_NAME;
+        Cursor cursor      = database.rawQuery(retrieveQuery, null);
+        String locationSettings = "FALSE";
+
+        if (cursor.moveToFirst()) {
+            do {
+                locationSettings = cursor.getString(0);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        database.close();
+
+        return locationSettings;
+
+    }
+
+    public String getMotionSettingsData(){
+        Log.d("DATABASE","getMotionSettingsData");
+
+        database = databaseHelper.getWritableDatabase();
+        String retrieveQuery = "SELECT MOTION_SETTINGS FROM " + APP_SETTINGS_TABLE_NAME;
+        Cursor cursor      = database.rawQuery(retrieveQuery, null);
+        String motionSettings = "FALSE";
+
+        if (cursor.moveToFirst()) {
+            do {
+                motionSettings = cursor.getString(0);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        database.close();
+
+        return motionSettings;
+
+    }
+
+    public void setSettingsData(String username, String locSettings, String motionSettings){
+        Log.d("DATABASE"," Add settings data ");
+
+        database = databaseHelper.getWritableDatabase();
+
+        ContentValues settingsDevice = new ContentValues();
+        settingsDevice.put("USERNAME",username);
+        settingsDevice.put("LOCATION_SETTINGS",locSettings);
+        settingsDevice.put("MOTION_SETTINGS",motionSettings);
+
+        database.insertOrThrow(APP_SETTINGS_TABLE_NAME, null, settingsDevice);
+        database.close();
+    }
+
+    public void updateLocationSettings(String newStatus) {
+
+        Log.d("update Location : ", " Status : "+ newStatus);
+        database = databaseHelper.getWritableDatabase();
+
+        ContentValues values=new ContentValues();
+        values.put("LOCATION_SETTINGS", newStatus);
+
+        int rowsUpdated = database.update(APP_SETTINGS_TABLE_NAME, values, null, null);
+
+        Log.d("UPDATED", " " + rowsUpdated);
+        database.close();
+
+    }
+
+    public void updateMotionSettings(String newStatus) {
+
+        Log.d("update Motion : ", " Status : "+ newStatus);
+        database = databaseHelper.getWritableDatabase();
+
+        ContentValues values=new ContentValues();
+        values.put("MOTION_SETTINGS", newStatus);
+
+        int rowsUpdated = database.update(APP_SETTINGS_TABLE_NAME, values, null, null);
+
+        Log.d("UPDATED", " " + rowsUpdated);
+        database.close();
+
+    }
+
+    public boolean addWikitudeTargetCollectionData(String username, TargetCollectionDetails details){
+        Log.d("DATABASE","set target collection");
+
+        boolean result = true;
+
+        database = databaseHelper.getWritableDatabase();
+
+        ContentValues targetCollection = new ContentValues();
+        targetCollection.put("USERNAME",username);
+        targetCollection.put("TARGET_COLLECTION_NAME", details.getCollectionName());
+        targetCollection.put("TARGET_COLLECTION_ID",details.getCollectionID());
+
+        try{
+            database.insert(WIKITUDE_TARGET_COLLECTION_TABLE_NAME, null, targetCollection);
+        }catch(SQLiteConstraintException e){
+            Log.e("Database Exception",   "Unique violation");
+            result = false;
+        } finally {
+            database.close();
+        }
+
+        if (result) {
+            TargetCollectionDetails collectionData = new TargetCollectionDetails();
+            collectionData.setUsername(username);
+            collectionData.setCollectionID(details.getCollectionID());
+            collectionData.setCollectionName(details.getCollectionName());
+
+            insertDynamoWikitudeTargetCollectionData(collectionData);
+        }
+
+        return result;
+    }
+
+    private void insertDynamoWikitudeTargetCollectionData(TargetCollectionDetails collectionData) {
+
+        Log.d("Add TargetCollection: ", "Dynamo DB");
+
+        new InsertUserTargetCollectionDetails().execute(collectionData);
 
     }
 
@@ -708,7 +924,7 @@ public class DatabaseSqlHelper {
                 Toast.makeText(context, "Successfully created user.",
                         Toast.LENGTH_LONG).show();
             } else {
-                deleteUserData(userInfo);
+                deleteUserData(userInfo.getUserName());
                 Toast.makeText(context, "Cannot add user at this time. Please try again later.",
                         Toast.LENGTH_LONG).show();
             }
@@ -739,4 +955,30 @@ public class DatabaseSqlHelper {
             }
         }
     }
+
+    private class InsertUserTargetCollectionDetails extends AsyncTask<TargetCollectionDetails, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(TargetCollectionDetails... data) {
+
+            boolean result = DynamoDbHelper.insertUserTargetCollectionDetails(data[0]);
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result) {
+                Toast.makeText(context, "Successfully created user.",
+                        Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(context, MainActivity.class);
+                context.startActivity(intent);
+            } else {
+                RegistrationDetailsActivity registerActivity = new RegistrationDetailsActivity();
+                registerActivity.collectionDynamoFailed();
+            }
+        }
+    }
+
+
 }

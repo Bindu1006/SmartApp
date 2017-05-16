@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_login2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/background"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.spectrum.smartapp.SettingsActivity"
+    tools:showIn="@layout/app_bar_settings">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/loc_settings"
+        android:text="Going Away"
+        android:textColor="@color/textbox"
+        android:layout_marginTop="50dp"
+        android:textSize="30dp"
+        android:gravity="center" />
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/home1"
+        android:layout_marginLeft="120dp"
+        android:layout_marginTop="130dp"
+        android:id="@+id/loc_id"
+        android:gravity="center_horizontal"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/video_settings"
+        android:text="Set Motion Detection"
+        android:textColor="@color/textbox"
+        android:layout_below="@+id/loc_id"
+        android:layout_marginTop="30dp"
+        android:textSize="30dp"
+        android:gravity="center" />
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/video_on"
+        android:layout_marginLeft="120dp"
+        android:layout_marginTop="330dp"
+        android:id="@+id/video_id"
+        android:gravity="center_horizontal"/>
+
+
+
+
+
+
+
+</RelativeLayout>

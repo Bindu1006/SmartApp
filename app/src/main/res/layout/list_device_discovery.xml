@@ -36,7 +36,7 @@
             android:ellipsize="start"
             android:maxLines="2"
             android:textColor="@color/textbox"
-            android:text="List" />
+            android:text="Device" />
 
         <TextView
             android:id="@+id/mac"

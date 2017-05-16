@@ -93,7 +93,6 @@ public class AlarmReceiver extends BroadcastReceiver {
             ConnectAmazonPubSubTask connectTask = new ConnectAmazonPubSubTask();
             connectTask.execute();
 
-            //TODO publish to aws
             Toast.makeText(context, "Turned ON", Toast.LENGTH_LONG).show();
         } else {
             String switchType = "OFF";
@@ -255,14 +254,16 @@ public class AlarmReceiver extends BroadcastReceiver {
 
                             try {
 
+                                Log.d("Publish Data: ", " "+ipString +" cmd "+ switchStatus);
                                 JSONObject msg = new JSONObject();
                                     msg.put("ip_address", ipString);
+                                    msg.put("cmd", switchStatus.toUpperCase());
 
-                                    if (switchStatus.equalsIgnoreCase("OFF")) {
-                                        msg.put("cmd", "ON");
-                                    } else {
-                                        msg.put("cmd", "OFF");
-                                    }
+//                                    if (switchStatus.equalsIgnoreCase("OFF")) {
+//                                        msg.put("cmd", "ON");
+//                                    } else {
+//                                        msg.put("cmd", "OFF");
+//                                    }
 
                                 mqttManager.publishString(msg.toString(), topic, AWSIotMqttQos.QOS0);
                             } catch (Exception e) {

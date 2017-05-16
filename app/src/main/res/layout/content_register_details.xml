@@ -15,6 +15,14 @@
     tools:showIn="@layout/app_bar_registration_details">
 
 
+    <ProgressBar
+        android:id="@+id/registerProgressBar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"/>
+
 
     <EditText
         android:layout_width="300dp"

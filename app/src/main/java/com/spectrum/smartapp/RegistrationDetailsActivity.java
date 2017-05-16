@@ -25,6 +25,7 @@ import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
@@ -39,7 +40,9 @@ import com.amazonaws.services.iot.AWSIotClient;
 import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
+import com.spectrum.smartapp.AugmentedReality.CloudManagerAPI;
 import com.spectrum.smartapp.BeanObjects.DeviceBean;
+import com.spectrum.smartapp.BeanObjects.TargetCollectionDetails;
 import com.spectrum.smartapp.BeanObjects.UserBean;
 import com.spectrum.smartapp.Utils.AmazonClientManager;
 import com.spectrum.smartapp.Utils.DatabaseSqlHelper;
@@ -55,13 +58,15 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.security.KeyStore;
 import java.util.UUID;
 
 
-public class RegistrationDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+public class RegistrationDetailsActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     public static AmazonClientManager clientManager = null;
 
@@ -70,8 +75,6 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
     protected GoogleApiClient mGoogleApiClient;
 
     private PlaceAutocompleteAdapter mAdapter;
-
-    private UserBean userData;
 
     // IoT endpoint
     // AWS Iot CLI describe-endpoint call returns: XXXXXXXXXX.iot.<region>.amazonaws.com
@@ -102,6 +105,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
     String certificateId;
     KeyStore clientKeyStore = null;
     CognitoCachingCredentialsProvider credentialsProvider;
+    DatabaseSqlHelper databaseHelper;
 
     private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
             new LatLng(-34.041458, 150.790100), new LatLng(-33.682247, 151.383362));
@@ -148,9 +152,6 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
 
     }
 
@@ -255,6 +256,8 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
             alertDialog.setMessage("Please provide a valid Phone number");
             alertDialog.show();
         } else {
+            final ProgressBar deviceProgressBar = (ProgressBar) findViewById(R.id.registerProgressBar);
+            deviceProgressBar.setVisibility(View.VISIBLE);
 
             UserBean userDetails = (UserBean) getIntent().getSerializableExtra("USER_DETAILS");
             EditText emailEditText = (EditText) findViewById(R.id.register_email);
@@ -264,22 +267,17 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
             EditText phoneEditText = (EditText) findViewById(R.id.register_phone);
             userDetails.setPhoneNumber(phoneEditText.getText().toString());
 
-            DatabaseSqlHelper databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+            databaseHelper = new DatabaseSqlHelper(getApplicationContext());
             boolean result = databaseHelper.registerUser(userDetails, true);
 
             if (result) {
-
-                userData = userDetails;
 
                 //Publish Users to Raspberry Pi
                 final String topic = "$aws/things/RaspberryPi/shadow/update/test";
 
 
                 ConnectAmazonPubSubTask connectTask = new ConnectAmazonPubSubTask();
-                connectTask.execute();
-
-                Intent intent = new Intent(getBaseContext(), MainActivity.class);
-                startActivity(intent);
+                connectTask.execute(userDetails);
 
             } else {
                 alertDialog.setMessage("Unable to add users at this moment. Please try again later.");
@@ -297,56 +295,6 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
         } else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.login2, menu);
-
-        MenuItem item = menu.findItem(R.id.action_logout);
-        item.setVisible(false);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 
     /**
@@ -562,12 +510,15 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
 
     }
 
-    public class ConnectAmazonPubSubTask extends AsyncTask<Void, Void, Void> {
+    public class ConnectAmazonPubSubTask extends AsyncTask<UserBean, Void, Void> {
 
         private boolean connected = false;
 
+        UserBean userDetails;
+
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(final UserBean... userData) {
+            userDetails = userData[0];
 
             //        Connect to Amazon IOS
             try {
@@ -586,8 +537,8 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
                             try {
 
                                 JSONObject msg = new JSONObject();
-                                msg.put("username", userData.getUserName());
-                                msg.put("password", userData.getPassword());
+                                msg.put("username", userData[0].getUserName());
+                                msg.put("password", userData[0].getPassword());
 
                                 mqttManager.publishString(msg.toString(), topic, AWSIotMqttQos.QOS0);
                             } catch (Exception e) {
@@ -607,8 +558,77 @@ public class RegistrationDetailsActivity extends AppCompatActivity implements Na
         protected void onPostExecute(Void result) {
             // TODO Auto-generated method stub
             super.onPostExecute(result);
+            CreateTargetCollectionTask task = new CreateTargetCollectionTask();
+            task.execute(userDetails.getUserName());
 
         }
+
+    }
+
+    public class CreateTargetCollectionTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... user) {
+            // The token to use when connecting to the endpoint
+            final String API_TOKEN = "911c630e7b239b3e0ee69d532b93d198";
+            // The version of the API we will use
+            final int API_VERSION = 2;
+
+            final CloudManagerAPI api = new CloudManagerAPI(API_TOKEN, API_VERSION);
+            try {
+                JSONObject createdTargetCollection = api.createTargetCollection(user[0]);
+                System.out.println(" - tc id:      " + createdTargetCollection.getString("id"));
+                System.out.println(" - tc name:    " + createdTargetCollection.getString("name"));
+                TargetCollectionDetails collectionDetails = new TargetCollectionDetails();
+                collectionDetails.setCollectionID(createdTargetCollection.getString("id"));
+                collectionDetails.setCollectionName(createdTargetCollection.getString("name"));
+
+                databaseHelper = new DatabaseSqlHelper(getApplicationContext());
+                databaseHelper.addWikitudeTargetCollectionData(user[0], collectionDetails);
+
+            } catch (JSONException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (CloudManagerAPI.APIException ex) {
+                ex.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            // TODO Auto-generated method stub
+            super.onPostExecute(result);
+
+            ProgressBar deviceProgressBar = (ProgressBar) findViewById(R.id.registerProgressBar);
+            deviceProgressBar.setVisibility(View.GONE);
+
+            Log.d("Wikitude target", "Target collection created");
+            Intent intent = new Intent(getBaseContext(), MainActivity.class);
+            startActivity(intent);
+        }
+
+    }
+
+    public void collectionDynamoFailed() {
+
+        ProgressBar deviceProgressBar = (ProgressBar) findViewById(R.id.registerProgressBar);
+        deviceProgressBar.setVisibility(View.GONE);
+
+        UserBean userDetails = (UserBean) getIntent().getSerializableExtra("USER_DETAILS");
+        databaseHelper.deleteUserData(userDetails.getUserName());
+        databaseHelper.deleteWikitudeTargetCollectionData(userDetails.getUserName());
+        AlertDialog alertDialog = new AlertDialog.Builder(RegistrationDetailsActivity.this).create();
+        alertDialog.setTitle("Error");
+        alertDialog.setMessage("Unable to add user at this moment Please try again later");
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
 
     }
 

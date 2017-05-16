@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_speech"
+        android:icon="@drawable/speech"
+        android:title="done"
+        app:showAsAction="ifRoom"/>
+
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
@@ -11,6 +18,12 @@
         android:id="@+id/action_add_device"
         android:orderInCategory="100"
         android:title="@string/action_add_device"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_view_alarm"
+        android:orderInCategory="100"
+        android:title="@string/action_view_alarm"
         app:showAsAction="never" />
 
     <item

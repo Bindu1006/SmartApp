@@ -40,7 +40,7 @@
             android:layout_marginTop="20dp"
             android:layout_marginLeft="15dp"
 
-            android:background="@drawable/camera"/>
+            android:background="@drawable/video1"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -52,24 +52,26 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
 
-        <Button
-            android:layout_width="140dp"
-            android:layout_height="120dp"
-            android:id="@+id/sensorsBtn"
-            android:layout_marginTop="20dp"
-            android:layout_marginRight="15dp"
 
-            android:background="@drawable/sensors"/>
 
         <Button
             android:layout_width="140dp"
             android:layout_height="120dp"
             android:id="@+id/augmentedBtn"
-            android:layout_toRightOf="@+id/sensorsBtn"
+            android:layout_marginTop="20dp"
+            android:layout_marginRight="15dp"
+
+            android:background="@drawable/augmeted_reality"/>
+
+        <Button
+            android:layout_width="140dp"
+            android:layout_height="120dp"
+            android:id="@+id/energyBtn"
+            android:layout_toRightOf="@+id/augmentedBtn"
             android:layout_marginTop="20dp"
             android:layout_marginLeft="15dp"
 
-            android:background="@drawable/security"/>
+            android:background="@drawable/energy"/>
 
     </RelativeLayout>
 
@@ -82,24 +84,23 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
 
-        <Button
-            android:layout_width="140dp"
-            android:layout_height="120dp"
-            android:id="@+id/energyBtn"
-            android:layout_marginTop="20dp"
-            android:layout_marginRight="15dp"
-
-            android:background="@drawable/energy"/>
 
         <Button
             android:layout_width="140dp"
             android:layout_height="120dp"
             android:id="@+id/dashboardBtn"
-            android:layout_toRightOf="@+id/energyBtn"
+            android:layout_marginTop="20dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/dashboard"/>
+
+        <Button
+            android:layout_width="140dp"
+            android:layout_height="120dp"
+            android:id="@+id/settingsBtn"
             android:layout_marginTop="20dp"
             android:layout_marginLeft="15dp"
-
-            android:background="@drawable/dashboard"/>
+            android:layout_toRightOf="@+id/dashboardBtn"
+            android:background="@drawable/settings"/>
 
     </RelativeLayout>
 

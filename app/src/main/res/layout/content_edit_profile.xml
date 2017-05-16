@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_login2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/background"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.spectrum.smartapp.EditProfileActivity"
+    tools:showIn="@layout/app_bar_edit_profile">
+
+    <AutoCompleteTextView
+        android:id="@+id/edit_address"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="40dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/edittext"
+        android:hint="Enter Address"
+        android:singleLine="true" />
+
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:id="@+id/edit_phone"
+        android:layout_below="@+id/edit_address"
+        android:layout_marginTop="40dp"
+        android:hint="Phone"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/edittext" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/edit_phone"
+        android:id="@+id/edit_email"
+        android:layout_marginTop="40dp"
+        android:hint="Email"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/edittext" />
+
+    <Button
+        android:id="@+id/edit_user"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/buttonlayout"
+        android:text="EDIT"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp" />
+
+
+
+</RelativeLayout>
